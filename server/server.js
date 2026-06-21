@@ -6,6 +6,7 @@ require("./config/db");
 
 const studentRoutes = require("./routes/studentRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
+const teacherRoutes = require("./routes/teacherRoutes");
 
 const app = express();
 
@@ -17,6 +18,7 @@ const PORT = process.env.PORT || 5000;
 // Routes
 app.use("/api/students", studentRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/teachers", teacherRoutes);
 
 app.get("/", (req, res) => {
   res.send("Welcome to Student Management System API");

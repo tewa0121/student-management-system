@@ -17,13 +17,16 @@ function Teachers() {
 
   return (
     <DashboardLayout>
-     <div className="d-flex justify-content-between align-items-center mb-4">
-  <h2>Teachers</h2>
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h2>Teachers</h2>
 
-  <button className="btn btn-primary">
-    + Add Teacher
-  </button>
-</div>
+        <button className="btn btn-primary">
+          + Add Teacher
+        </button>
+      </div>
+
+      <TeacherForm />
+
       <table className="table table-bordered table-striped">
         <thead className="table-dark">
           <tr>

@@ -7,10 +7,10 @@ const {
   addTeacher,
 } = require("../controllers/teacherController");
 
-// GET all teachers
+// GET ALL
 router.get("/", getTeachers);
 
-// ADD new teacher
+// ADD NEW
 router.post("/", addTeacher);
 
 module.exports = router;

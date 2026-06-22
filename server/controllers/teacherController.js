@@ -1,8 +1,9 @@
 const db = require("../config/db");
 
-// ==========================
+// =========================
 // GET ALL TEACHERS
-// ==========================
+// =========================
+
 const getTeachers = (req, res) => {
   const sql = "SELECT * FROM teachers";
 
@@ -21,9 +22,10 @@ const getTeachers = (req, res) => {
   });
 };
 
-// ==========================
-// ADD NEW TEACHER
-// ==========================
+// =========================
+// ADD TEACHER
+// =========================
+
 const addTeacher = (req, res) => {
   const {
     teacher_id,
@@ -33,7 +35,8 @@ const addTeacher = (req, res) => {
     email,
     phone,
     department,
-    address,
+    hire_date,
+    salary,
   } = req.body;
 
   const sql = `
@@ -46,9 +49,10 @@ const addTeacher = (req, res) => {
       email,
       phone,
       department,
-      address
+      hire_date,
+      salary
     )
-    VALUES (?,?,?,?,?,?,?,?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
   db.query(
@@ -61,7 +65,8 @@ const addTeacher = (req, res) => {
       email,
       phone,
       department,
-      address,
+      hire_date,
+      salary,
     ],
     (err, result) => {
       if (err) {
@@ -71,10 +76,9 @@ const addTeacher = (req, res) => {
         });
       }
 
-      res.status(201).json({
+      res.json({
         success: true,
         message: "Teacher Added Successfully",
-        teacherId: result.insertId,
       });
     }
   );

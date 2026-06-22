@@ -8,6 +8,7 @@ const studentRoutes = require("./routes/studentRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
 const teacherRoutes = require("./routes/teacherRoutes");
 
+
 const app = express();
 
 app.use(cors());

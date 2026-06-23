@@ -1,7 +1,15 @@
-import { useState } from "react";
-import { addTeacher } from "../services/teacherService";
 
-function TeacherForm({ onTeacherAdded }) {
+import { useState, useEffect } from "react";
+import {
+  addTeacher,
+  updateTeacher,
+} from "../services/teacherService";
+
+function TeacherForm({
+editingTeacher,
+onTeacherAdded,
+onCancel,
+}) {
   const [teacher, setTeacher] = useState({
     teacher_id: "",
     first_name: "",
@@ -15,6 +23,24 @@ function TeacherForm({ onTeacherAdded }) {
     address: "",
   });
 
+  useEffect(() => {
+    if (editingTeacher) {
+      setTeacher({
+        teacher_id: editingTeacher.teacher_id || "",
+        first_name: editingTeacher.first_name || "",
+        last_name: editingTeacher.last_name || "",
+        gender: editingTeacher.gender || "",
+        email: editingTeacher.email || "",
+        phone: editingTeacher.phone || "",
+        department: editingTeacher.department || "",
+        hire_date: editingTeacher.hire_date || "",
+        salary: editingTeacher.salary || "",
+        address: editingTeacher.address || "",
+        id: editingTeacher.id,
+      });
+    }
+  }, [editingTeacher]);
+
   const handleChange = (e) => {
     setTeacher({
       ...teacher,
@@ -26,7 +52,16 @@ function TeacherForm({ onTeacherAdded }) {
     e.preventDefault();
 
     try {
-      const result = await addTeacher(teacher);
+      let result;
+
+      if (teacher.id) {
+        result = await updateTeacher(
+          teacher.id,
+          teacher
+        );
+      } else {
+        result = await addTeacher(teacher);
+      }
 
       alert(result.message);
 
@@ -48,16 +83,25 @@ function TeacherForm({ onTeacherAdded }) {
       });
     } catch (error) {
       console.log(error);
-      alert(error.response?.data?.message || "Failed to add teacher");
+
+      alert(
+        error.response?.data?.message ||
+          "Failed to save teacher"
+      );
     }
   };
 
   return (
     <form className="card p-4 mb-4" onSubmit={handleSubmit}>
-      <h4 className="mb-3">Add New Teacher</h4>
+      <h4 className="mb-3">
+        {teacher.id
+          ? "Edit Teacher"
+          : "Add New Teacher"}
+      </h4>
 
       <div className="mb-3">
-        <label className="form-label">Teacher ID</label>
+        <label>Teacher ID</label>
+
         <input
           type="text"
           name="teacher_id"
@@ -68,7 +112,8 @@ function TeacherForm({ onTeacherAdded }) {
       </div>
 
       <div className="mb-3">
-        <label className="form-label">First Name</label>
+        <label>First Name</label>
+
         <input
           type="text"
           name="first_name"
@@ -79,7 +124,8 @@ function TeacherForm({ onTeacherAdded }) {
       </div>
 
       <div className="mb-3">
-        <label className="form-label">Last Name</label>
+        <label>Last Name</label>
+
         <input
           type="text"
           name="last_name"
@@ -90,7 +136,7 @@ function TeacherForm({ onTeacherAdded }) {
       </div>
 
       <div className="mb-3">
-        <label className="form-label">Gender</label>
+        <label>Gender</label>
 
         <select
           name="gender"
@@ -99,13 +145,16 @@ function TeacherForm({ onTeacherAdded }) {
           className="form-select"
         >
           <option value="">Select Gender</option>
+
           <option value="Male">Male</option>
+
           <option value="Female">Female</option>
         </select>
       </div>
 
       <div className="mb-3">
-        <label className="form-label">Email</label>
+        <label>Email</label>
+
         <input
           type="email"
           name="email"
@@ -116,7 +165,8 @@ function TeacherForm({ onTeacherAdded }) {
       </div>
 
       <div className="mb-3">
-        <label className="form-label">Phone</label>
+        <label>Phone</label>
+
         <input
           type="text"
           name="phone"
@@ -127,7 +177,8 @@ function TeacherForm({ onTeacherAdded }) {
       </div>
 
       <div className="mb-3">
-        <label className="form-label">Department</label>
+        <label>Department</label>
+
         <input
           type="text"
           name="department"
@@ -138,7 +189,8 @@ function TeacherForm({ onTeacherAdded }) {
       </div>
 
       <div className="mb-3">
-        <label className="form-label">Hire Date</label>
+        <label>Hire Date</label>
+
         <input
           type="date"
           name="hire_date"
@@ -149,7 +201,8 @@ function TeacherForm({ onTeacherAdded }) {
       </div>
 
       <div className="mb-3">
-        <label className="form-label">Salary</label>
+        <label>Salary</label>
+
         <input
           type="number"
           name="salary"
@@ -160,7 +213,7 @@ function TeacherForm({ onTeacherAdded }) {
       </div>
 
       <div className="mb-3">
-        <label className="form-label">Address</label>
+        <label>Address</label>
 
         <textarea
           name="address"
@@ -168,14 +221,33 @@ function TeacherForm({ onTeacherAdded }) {
           onChange={handleChange}
           className="form-control"
           rows="3"
-        ></textarea>
+        />
       </div>
 
-      <button className="btn btn-success">
-        Save Teacher
+      <button
+        type="submit"
+        className={
+          teacher.id
+            ? "btn btn-warning"
+            : "btn btn-success"
+        }
+      >
+        {teacher.id
+          ? "Update Teacher"
+          : "Save Teacher"}
       </button>
+      <button
+type="button"
+className="btn btn-secondary ms-2"
+onClick={onCancel}
+>
+
+Cancel
+
+</button>
     </form>
   );
 }
 
 export default TeacherForm;
+

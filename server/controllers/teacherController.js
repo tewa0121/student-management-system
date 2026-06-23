@@ -1,3 +1,4 @@
+
 const db = require("../config/db");
 
 // ====================================
@@ -87,9 +88,10 @@ const addTeacher = (req, res) => {
     }
   );
 };
-// ===========================
+
+// ====================================
 // UPDATE TEACHER
-// ===========================
+// ====================================
 
 const updateTeacher = (req, res) => {
   const { id } = req.params;
@@ -154,87 +156,16 @@ const updateTeacher = (req, res) => {
   );
 };
 
-module.exports = {
-    getTeachers,
-    addTeacher,
-    updateTeacher,
-    deleteTeacher,
-};
-// ==============================
+// ====================================
 // DELETE TEACHER
-// ==============================
+// ====================================
 
 const deleteTeacher = (req, res) => {
   const { id } = req.params;
 
-  const sql = "DELETE FROM teachers WHERE id=?";
-
-  db.query(sql, [id], (err) => {
-    if (err) {
-      return res.status(500).json({
-        success: false,
-        message: err.message,
-      });
-    }
-
-    res.json({
-      success: true,
-      message: "Teacher Deleted Successfully",
-    });
-  });
-};
-
-module.exports = {
-  getTeachers,
-  addTeacher,
-  deleteTeacher,
-  updateTeacher,
-};
-// ==============================
-// UPDATE TEACHER
-// ==============================
-
-const updateTeacher = (req, res) => {
-  const { id } = req.params;
-
-  const {
-    teacher_id,
-    first_name,
-    last_name,
-    gender,
-    email,
-    phone,
-    department,
-    address,
-  } = req.body;
-
-  const sql = `
-    UPDATE teachers
-    SET
-      teacher_id=?,
-      first_name=?,
-      last_name=?,
-      gender=?,
-      email=?,
-      phone=?,
-      department=?,
-      address=?
-    WHERE id=?
-  `;
-
   db.query(
-    sql,
-    [
-      teacher_id,
-      first_name,
-      last_name,
-      gender,
-      email,
-      phone,
-      department,
-      address,
-      id,
-    ],
+    "DELETE FROM teachers WHERE id=?",
+    [id],
     (err) => {
       if (err) {
         return res.status(500).json({
@@ -245,8 +176,16 @@ const updateTeacher = (req, res) => {
 
       res.json({
         success: true,
-        message: "Teacher Updated Successfully",
+        message: "Teacher Deleted Successfully",
       });
     }
   );
 };
+
+module.exports = {
+  getTeachers,
+  addTeacher,
+  updateTeacher,
+  deleteTeacher,
+};
+

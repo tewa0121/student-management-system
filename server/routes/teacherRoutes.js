@@ -1,3 +1,4 @@
+
 const express = require("express");
 
 const router = express.Router();
@@ -5,18 +6,21 @@ const router = express.Router();
 const {
   getTeachers,
   addTeacher,
-  deleteTeacher,
   updateTeacher,
+  deleteTeacher,
 } = require("../controllers/teacherController");
-router.put("/:id", updateTeacher);
-router.delete("/:id", deleteTeacher);
 
-
-
-// GET ALL
+// GET ALL TEACHERS
 router.get("/", getTeachers);
 
-// ADD NEW
+// ADD TEACHER
 router.post("/", addTeacher);
 
+// UPDATE TEACHER
+router.put("/:id", updateTeacher);
+
+// DELETE TEACHER
+router.delete("/:id", deleteTeacher);
+
 module.exports = router;
+

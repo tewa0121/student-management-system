@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { addTeacher } from "../services/teacherService";
 
-function TeacherForm() {
+function TeacherForm({ onTeacherAdded }) {
   const [teacher, setTeacher] = useState({
     teacher_id: "",
     first_name: "",
@@ -12,9 +12,9 @@ function TeacherForm() {
     department: "",
     hire_date: "",
     salary: "",
+    address: "",
   });
 
-  // Handle all input changes
   const handleChange = (e) => {
     setTeacher({
       ...teacher,
@@ -22,33 +22,35 @@ function TeacherForm() {
     });
   };
 
-  // Handle form submit
- const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  try {
-    const result = await addTeacher(teacher);
+    try {
+      const result = await addTeacher(teacher);
 
-    alert(result.message);
+      alert(result.message);
 
-    setTeacher({
-      teacher_id: "",
-      first_name: "",
-      last_name: "",
-      gender: "",
-      email: "",
-      phone: "",
-      department: "",
-      hire_date: "",
-      salary: "",
-    });
+      if (onTeacherAdded) {
+        onTeacherAdded();
+      }
 
-  } catch (error) {
-    console.log(error);
-
-    alert("Failed to add teacher");
-  }
-};
+      setTeacher({
+        teacher_id: "",
+        first_name: "",
+        last_name: "",
+        gender: "",
+        email: "",
+        phone: "",
+        department: "",
+        hire_date: "",
+        salary: "",
+        address: "",
+      });
+    } catch (error) {
+      console.log(error);
+      alert(error.response?.data?.message || "Failed to add teacher");
+    }
+  };
 
   return (
     <form className="card p-4 mb-4" onSubmit={handleSubmit}>
@@ -62,7 +64,6 @@ function TeacherForm() {
           value={teacher.teacher_id}
           onChange={handleChange}
           className="form-control"
-          placeholder="Enter Teacher ID"
         />
       </div>
 
@@ -74,7 +75,6 @@ function TeacherForm() {
           value={teacher.first_name}
           onChange={handleChange}
           className="form-control"
-          placeholder="Enter First Name"
         />
       </div>
 
@@ -86,7 +86,6 @@ function TeacherForm() {
           value={teacher.last_name}
           onChange={handleChange}
           className="form-control"
-          placeholder="Enter Last Name"
         />
       </div>
 
@@ -113,7 +112,6 @@ function TeacherForm() {
           value={teacher.email}
           onChange={handleChange}
           className="form-control"
-          placeholder="Enter Email"
         />
       </div>
 
@@ -125,7 +123,6 @@ function TeacherForm() {
           value={teacher.phone}
           onChange={handleChange}
           className="form-control"
-          placeholder="Enter Phone Number"
         />
       </div>
 
@@ -137,10 +134,10 @@ function TeacherForm() {
           value={teacher.department}
           onChange={handleChange}
           className="form-control"
-          placeholder="Enter Department"
         />
       </div>
- <div className="mb-3">
+
+      <div className="mb-3">
         <label className="form-label">Hire Date</label>
         <input
           type="date"
@@ -159,11 +156,22 @@ function TeacherForm() {
           value={teacher.salary}
           onChange={handleChange}
           className="form-control"
-          placeholder="Enter Salary"
         />
       </div>
-      
-      <button type="submit" className="btn btn-success">
+
+      <div className="mb-3">
+        <label className="form-label">Address</label>
+
+        <textarea
+          name="address"
+          value={teacher.address}
+          onChange={handleChange}
+          className="form-control"
+          rows="3"
+        ></textarea>
+      </div>
+
+      <button className="btn btn-success">
         Save Teacher
       </button>
     </form>

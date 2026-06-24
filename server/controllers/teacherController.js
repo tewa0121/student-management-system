@@ -1,4 +1,3 @@
-
 const db = require("../config/db");
 
 // ====================================
@@ -6,21 +5,25 @@ const db = require("../config/db");
 // ====================================
 
 const getTeachers = (req, res) => {
-  const sql = "SELECT * FROM teachers ORDER BY id DESC";
+const sql =
+"SELECT * FROM teachers ORDER BY id DESC";
 
-  db.query(sql, (err, result) => {
-    if (err) {
-      return res.status(500).json({
-        success: false,
-        message: err.message,
-      });
-    }
+db.query(sql, (err, result) => {
+if (err) {
+return res.status(500).json({
+success: false,
+message: err.message,
+});
+}
 
-    res.json({
-      success: true,
-      data: result,
-    });
-  });
+
+res.json({
+  success: true,
+  data: result,
+});
+
+
+});
 };
 
 // ====================================
@@ -28,21 +31,24 @@ const getTeachers = (req, res) => {
 // ====================================
 
 const addTeacher = (req, res) => {
-  const {
-    teacher_id,
-    first_name,
-    last_name,
-    gender,
-    email,
-    phone,
-    department,
-    hire_date,
-    salary,
-    address,
-  } = req.body;
+const {
+teacher_id,
+first_name,
+last_name,
+gender,
+email,
+phone,
+department,
+hire_date,
+salary,
+address,
+} = req.body;
 
-  const sql = `
-    INSERT INTO teachers
+const photo = req.file
+? req.file.filename
+: null;
+
+const sql = `     INSERT INTO teachers
     (
       teacher_id,
       first_name,
@@ -53,40 +59,45 @@ const addTeacher = (req, res) => {
       department,
       hire_date,
       salary,
-      address
+      address,
+      photo
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
-  db.query(
-    sql,
-    [
-      teacher_id,
-      first_name,
-      last_name,
-      gender,
-      email,
-      phone,
-      department,
-      hire_date,
-      salary,
-      address,
-    ],
-    (err, result) => {
-      if (err) {
-        return res.status(500).json({
-          success: false,
-          message: err.message,
-        });
-      }
+db.query(
+sql,
+[
+teacher_id,
+first_name,
+last_name,
+gender,
+email,
+phone,
+department,
+hire_date,
+salary,
+address,
+photo,
+],
+(err, result) => {
+if (err) {
+return res.status(500).json({
+success: false,
+message: err.message,
+});
+}
 
-      res.status(201).json({
-        success: true,
-        message: "Teacher Added Successfully",
-        teacherId: result.insertId,
-      });
-    }
-  );
+
+  res.status(201).json({
+    success: true,
+    message: "Teacher Added Successfully",
+    teacherId: result.insertId,
+  });
+}
+
+
+);
 };
 
 // ====================================
@@ -94,23 +105,26 @@ const addTeacher = (req, res) => {
 // ====================================
 
 const updateTeacher = (req, res) => {
-  const { id } = req.params;
+const { id } = req.params;
 
-  const {
-    teacher_id,
-    first_name,
-    last_name,
-    gender,
-    email,
-    phone,
-    department,
-    hire_date,
-    salary,
-    address,
-  } = req.body;
+const {
+teacher_id,
+first_name,
+last_name,
+gender,
+email,
+phone,
+department,
+hire_date,
+salary,
+address,
+} = req.body;
 
-  const sql = `
-    UPDATE teachers
+const photo = req.file
+? req.file.filename
+: req.body.photo;
+
+const sql = `     UPDATE teachers
     SET
       teacher_id=?,
       first_name=?,
@@ -121,39 +135,44 @@ const updateTeacher = (req, res) => {
       department=?,
       hire_date=?,
       salary=?,
-      address=?
+      address=?,
+      photo=?
     WHERE id=?
   `;
 
-  db.query(
-    sql,
-    [
-      teacher_id,
-      first_name,
-      last_name,
-      gender,
-      email,
-      phone,
-      department,
-      hire_date,
-      salary,
-      address,
-      id,
-    ],
-    (err) => {
-      if (err) {
-        return res.status(500).json({
-          success: false,
-          message: err.message,
-        });
-      }
+db.query(
+sql,
+[
+teacher_id,
+first_name,
+last_name,
+gender,
+email,
+phone,
+department,
+hire_date,
+salary,
+address,
+photo,
+id,
+],
+(err) => {
+if (err) {
+return res.status(500).json({
+success: false,
+message: err.message,
+});
+}
 
-      res.json({
-        success: true,
-        message: "Teacher Updated Successfully",
-      });
-    }
-  );
+
+  res.json({
+    success: true,
+    message: "Teacher Updated Successfully",
+  });
+}
+
+
+);
 };
 
 // ====================================
@@ -161,31 +180,33 @@ const updateTeacher = (req, res) => {
 // ====================================
 
 const deleteTeacher = (req, res) => {
-  const { id } = req.params;
+const { id } = req.params;
 
-  db.query(
-    "DELETE FROM teachers WHERE id=?",
-    [id],
-    (err) => {
-      if (err) {
-        return res.status(500).json({
-          success: false,
-          message: err.message,
-        });
-      }
+db.query(
+"DELETE FROM teachers WHERE id=?",
+[id],
+(err) => {
+if (err) {
+return res.status(500).json({
+success: false,
+message: err.message,
+});
+}
 
-      res.json({
-        success: true,
-        message: "Teacher Deleted Successfully",
-      });
-    }
-  );
+
+  res.json({
+    success: true,
+    message: "Teacher Deleted Successfully",
+  });
+}
+
+
+);
 };
 
 module.exports = {
-  getTeachers,
-  addTeacher,
-  updateTeacher,
-  deleteTeacher,
+getTeachers,
+addTeacher,
+updateTeacher,
+deleteTeacher,
 };
-

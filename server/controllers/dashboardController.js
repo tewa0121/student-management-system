@@ -3,7 +3,8 @@ const db = require("../config/db");
 const getDashboardStats = (req, res) => {
   const sql = `
     SELECT
-      (SELECT COUNT(*) FROM students) AS totalStudents
+      (SELECT COUNT(*) FROM students) AS totalStudents,
+      (SELECT COUNT(*) FROM teachers) AS totalTeachers
   `;
 
   db.query(sql, (err, result) => {

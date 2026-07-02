@@ -5,6 +5,7 @@ require("dotenv").config();
 require("./config/db");
 
 const studentRoutes = require("./routes/studentRoutes");
+
 const dashboardRoutes = require("./routes/dashboardRoutes");
 const teacherRoutes = require("./routes/teacherRoutes");
 
@@ -19,6 +20,7 @@ const PORT = process.env.PORT || 5000;
 
 // Routes
 app.use("/api/students", studentRoutes);
+
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/teachers", teacherRoutes);
 

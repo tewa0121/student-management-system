@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard';
 import Users from './pages/Users';
 import Students from './pages/Students';
 import StudentForm from './pages/StudentForm';
+import AcademicYears from './pages/AcademicYears';   // <-- new import
 
 const ProtectedRoute = ({ children }) => {
   const { user } = useAuth();
@@ -41,6 +42,12 @@ function App() {
       <Route path="/students/:id/edit" element={
         <ProtectedRoute>
           <StudentForm />
+        </ProtectedRoute>
+      } />
+      {/* New Academic Years route */}
+      <Route path="/academic-years" element={
+        <ProtectedRoute>
+          <AcademicYears />
         </ProtectedRoute>
       } />
       <Route path="/" element={<Navigate to="/dashboard" />} />

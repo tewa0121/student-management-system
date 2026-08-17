@@ -12,8 +12,10 @@ const { authenticate, authorize } = require('../middleware/auth');
 
 const router = express.Router();
 
+// All routes require authentication
 router.use(authenticate);
 
+// Routes
 router.get('/', authorize('academics.view'), getAcademicYears);
 router.get('/active', authorize('academics.view'), getActiveAcademicYear);
 router.get('/:id', authorize('academics.view'), getAcademicYear);

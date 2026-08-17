@@ -41,7 +41,7 @@ const AcademicYear = {
     return result.affectedRows > 0;
   },
   setActive: async (id) => {
-    // Deactivate all others first
+    // Deactivate all others, then activate this one
     await pool.query('UPDATE academic_years SET isActive = FALSE');
     await pool.query('UPDATE academic_years SET isActive = TRUE WHERE id = ?', [id]);
   }

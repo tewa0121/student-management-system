@@ -9,7 +9,7 @@ const pool = mysql.createPool({
   port: process.env.DB_PORT,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,   // set default database
+  database: process.env.DB_NAME,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
@@ -218,6 +218,67 @@ const initDatabase = async () => {
       )
     `);
 
+    // ============ EXAM & GRADING TABLES ============
+
+    // --- grade_scale ---
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS grade_scale (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        grade VARCHAR(5) NOT NULL UNIQUE,
+        minMarks INT NOT NULL,
+        maxMarks INT NOT NULL,
+        gpa DECIMAL(3,2) NOT NULL,
+        description VARCHAR(100)
+      )
+    `);
+
+    // --- exam_types ---
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS exam_types (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        name VARCHAR(50) NOT NULL UNIQUE,
+        description VARCHAR(100)
+      )
+    `);
+
+    // --- exams ---
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS exams (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        examTypeId INT NOT NULL,
+        classId INT NOT NULL,
+        subjectId INT NOT NULL,
+        name VARCHAR(100),
+        date DATE NOT NULL,
+        maxMarks INT NOT NULL DEFAULT 100,
+        passingMarks INT DEFAULT 40,
+        description TEXT,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (examTypeId) REFERENCES exam_types(id) ON DELETE CASCADE,
+        FOREIGN KEY (classId) REFERENCES classes(id) ON DELETE CASCADE,
+        FOREIGN KEY (subjectId) REFERENCES subjects(id) ON DELETE CASCADE
+      )
+    `);
+
+    // --- exam_results ---
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS exam_results (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        examId INT NOT NULL,
+        studentId INT NOT NULL,
+        marksObtained DECIMAL(5,2) NOT NULL,
+        grade VARCHAR(5),
+        gpa DECIMAL(3,2),
+        remarks TEXT,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (examId) REFERENCES exams(id) ON DELETE CASCADE,
+        FOREIGN KEY (studentId) REFERENCES students(id) ON DELETE CASCADE,
+        UNIQUE KEY (examId, studentId)
+      )
+    `);
+
     // --- roles & permissions ---
     await connection.query(`
       CREATE TABLE IF NOT EXISTS roles (
@@ -267,7 +328,7 @@ const initDatabase = async () => {
       );
     }
 
-    // 2. Insert default permissions (including attendance)
+    // 2. Insert default permissions
     const permissions = [
       // Users
       { name: 'users.view', description: 'View users' },
@@ -307,6 +368,36 @@ const initDatabase = async () => {
       );
     }
 
+    // --- Insert default grade scale ---
+    const gradeScale = [
+      { grade: 'A+', min: 90, max: 100, gpa: 4.0 },
+      { grade: 'A',  min: 80, max: 89, gpa: 3.7 },
+      { grade: 'A-', min: 75, max: 79, gpa: 3.3 },
+      { grade: 'B+', min: 70, max: 74, gpa: 3.0 },
+      { grade: 'B',  min: 65, max: 69, gpa: 2.7 },
+      { grade: 'B-', min: 60, max: 64, gpa: 2.3 },
+      { grade: 'C+', min: 55, max: 59, gpa: 2.0 },
+      { grade: 'C',  min: 50, max: 54, gpa: 1.7 },
+      { grade: 'C-', min: 45, max: 49, gpa: 1.3 },
+      { grade: 'D',  min: 40, max: 44, gpa: 1.0 },
+      { grade: 'F',  min: 0,  max: 39, gpa: 0.0 },
+    ];
+    for (const g of gradeScale) {
+      await connection.query(
+        `INSERT IGNORE INTO grade_scale (grade, minMarks, maxMarks, gpa) VALUES (?, ?, ?, ?)`,
+        [g.grade, g.min, g.max, g.gpa]
+      );
+    }
+
+    // --- Insert default exam types ---
+    const examTypes = ['Midterm', 'Final', 'Quiz', 'Monthly Test', 'Mock Exam'];
+    for (const type of examTypes) {
+      await connection.query(
+        `INSERT IGNORE INTO exam_types (name) VALUES (?)`,
+        [type]
+      );
+    }
+
     // 3. Assign ALL permissions to super_admin and admin
     const [superAdminRole] = await connection.query("SELECT id FROM roles WHERE name = 'super_admin'");
     const [adminRole] = await connection.query("SELECT id FROM roles WHERE name = 'admin'");
@@ -336,7 +427,7 @@ const initDatabase = async () => {
       VALUES ('admin@school.com', ?, 'Admin', 'User', 'super_admin', TRUE)
     `, [hashedPassword]);
 
-    console.log('✅ Database and tables initialized with seed data (including academics and attendance).');
+    console.log('✅ Database and tables initialized with seed data (including academics, attendance, and exams/grading).');
   } catch (error) {
     console.error('❌ Database initialization error:', error);
     throw error;

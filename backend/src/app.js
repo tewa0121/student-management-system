@@ -18,6 +18,8 @@ const examRoutes = require('./routes/examRoutes');
 const feeStructureRoutes = require('./routes/feeStructureRoutes');
 const invoiceRoutes = require('./routes/invoiceRoutes');
 const feeCategoryRoutes = require('./routes/feeCategoryRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
+
 const app = express();
 
 // --- CORS: allow all origins (for development) ---
@@ -50,6 +52,7 @@ app.use('/api/exams', examRoutes);
 app.use('/api/fee-structures', feeStructureRoutes);
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/fee-categories', feeCategoryRoutes);
+app.use('/api/payments', paymentRoutes);
 // Error handler (must be last)
 app.use(errorHandler);
 

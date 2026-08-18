@@ -10,6 +10,7 @@ const errorHandler = require('./middleware/errorHandler');
 const academicYearRoutes = require('./routes/academicYearRoutes');
 const termRoutes = require('./routes/termRoutes');
 const classRoutes = require('./routes/classRoutes');
+const sectionRoutes = require('./routes/sectionRoutes');
 
 const app = express();
 
@@ -35,6 +36,7 @@ app.use('/api/students', studentRoutes);
 app.use('/api/academic-years', academicYearRoutes);
 app.use('/api/terms', termRoutes);
 app.use('/api/classes', classRoutes);
+app.use('/api/sections', sectionRoutes);
 
 // Error handler (must be last)
 app.use(errorHandler);

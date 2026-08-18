@@ -12,6 +12,7 @@ const termRoutes = require('./routes/termRoutes');
 const classRoutes = require('./routes/classRoutes');
 const sectionRoutes = require('./routes/sectionRoutes');
 const subjectRoutes = require('./routes/subjectRoutes');
+const enrollmentRoutes = require('./routes/enrollmentRoutes');
 
 const app = express();
 
@@ -39,6 +40,7 @@ app.use('/api/terms', termRoutes);
 app.use('/api/classes', classRoutes);
 app.use('/api/sections', sectionRoutes);
 app.use('/api/subjects', subjectRoutes);
+app.use('/api/enrollments', enrollmentRoutes);
 
 // Error handler (must be last)
 app.use(errorHandler);

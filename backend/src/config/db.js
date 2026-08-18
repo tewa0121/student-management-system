@@ -9,7 +9,7 @@ const pool = mysql.createPool({
   port: process.env.DB_PORT,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,   // <-- FIX: set default database
+  database: process.env.DB_NAME,   // set default database
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
@@ -18,9 +18,8 @@ const pool = mysql.createPool({
 const initDatabase = async () => {
   const connection = await pool.getConnection();
   try {
-    // Create database if it doesn't exist (connection currently has no default DB)
     await connection.query(`CREATE DATABASE IF NOT EXISTS ${process.env.DB_NAME}`);
-    await connection.query(`USE ${process.env.DB_NAME}`); // select for this connection
+    await connection.query(`USE ${process.env.DB_NAME}`);
 
     // --- users table ---
     await connection.query(`
@@ -200,6 +199,25 @@ const initDatabase = async () => {
       )
     `);
 
+    // --- attendance table ---
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS attendance (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        studentId INT NOT NULL,
+        classId INT NOT NULL,
+        sectionId INT NULL,
+        date DATE NOT NULL,
+        status ENUM('Present','Absent','Late','Excused','Half-day') NOT NULL,
+        note TEXT,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (studentId) REFERENCES students(id) ON DELETE CASCADE,
+        FOREIGN KEY (classId) REFERENCES classes(id) ON DELETE CASCADE,
+        FOREIGN KEY (sectionId) REFERENCES sections(id) ON DELETE SET NULL,
+        UNIQUE KEY (studentId, classId, sectionId, date)
+      )
+    `);
+
     // --- roles & permissions ---
     await connection.query(`
       CREATE TABLE IF NOT EXISTS roles (
@@ -249,7 +267,7 @@ const initDatabase = async () => {
       );
     }
 
-    // 2. Insert default permissions
+    // 2. Insert default permissions (including attendance)
     const permissions = [
       // Users
       { name: 'users.view', description: 'View users' },
@@ -318,7 +336,7 @@ const initDatabase = async () => {
       VALUES ('admin@school.com', ?, 'Admin', 'User', 'super_admin', TRUE)
     `, [hashedPassword]);
 
-    console.log('✅ Database and tables initialized with seed data (including academics).');
+    console.log('✅ Database and tables initialized with seed data (including academics and attendance).');
   } catch (error) {
     console.error('❌ Database initialization error:', error);
     throw error;

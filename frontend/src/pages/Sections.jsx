@@ -62,7 +62,12 @@ const Sections = () => {
       setForm({ classId: '', name: '', teacherId: '', capacity: '' });
       fetchSections();
     } catch (err) {
-      alert(err.response?.data?.message || 'Create failed');
+      // Show the most detailed error available
+      const msg = err.response?.data?.sqlMessage || 
+                  err.response?.data?.message || 
+                  err.response?.data?.error || 
+                  'Create failed';
+      alert(msg);
     }
   };
 
@@ -72,7 +77,10 @@ const Sections = () => {
       await axios.delete(`${SECTIONS_API}/${id}`, getAuthHeader());
       fetchSections();
     } catch (err) {
-      alert(err.response?.data?.message || 'Delete failed');
+      const msg = err.response?.data?.sqlMessage || 
+                  err.response?.data?.message || 
+                  'Delete failed';
+      alert(msg);
     }
   };
 

@@ -23,11 +23,33 @@ const getSection = async (req, res, next) => {
 const createSection = async (req, res, next) => {
   try {
     const { classId, name, teacherId, capacity } = req.body;
-    const id = await Section.create({ classId, name, teacherId, capacity });
+    
+    if (!classId || !name) {
+      return res.status(400).json({ message: 'Class ID and Name are required' });
+    }
+    
+    const classIdNum = parseInt(classId);
+    if (isNaN(classIdNum)) {
+      return res.status(400).json({ message: 'Class ID must be a number' });
+    }
+    
+    const id = await Section.create({ 
+      classId: classIdNum, 
+      name, 
+      teacherId: teacherId || null, 
+      capacity: capacity || 0 
+    });
+    
     const newSection = await Section.findById(id);
     res.status(201).json({ message: 'Section created', section: newSection });
   } catch (error) {
-    next(error);
+    console.error('❌ Create section error:', error);
+    res.status(500).json({ 
+      message: 'Failed to create section', 
+      error: error.message,
+      sqlMessage: error.sqlMessage || null,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 };
 
@@ -41,6 +63,7 @@ const updateSection = async (req, res, next) => {
     const updatedSection = await Section.findById(id);
     res.json({ message: 'Section updated', section: updatedSection });
   } catch (error) {
+    console.error('Update section error:', error);
     next(error);
   }
 };
@@ -53,6 +76,7 @@ const deleteSection = async (req, res, next) => {
     await Section.delete(id);
     res.json({ message: 'Section deleted' });
   } catch (error) {
+    console.error('Delete section error:', error);
     next(error);
   }
 };

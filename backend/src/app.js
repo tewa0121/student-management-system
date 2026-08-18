@@ -14,6 +14,7 @@ const sectionRoutes = require('./routes/sectionRoutes');
 const subjectRoutes = require('./routes/subjectRoutes');
 const enrollmentRoutes = require('./routes/enrollmentRoutes');
 const attendanceRoutes = require('./routes/attendanceRoutes');
+const examRoutes = require('./routes/examRoutes');
 
 const app = express();
 
@@ -43,6 +44,7 @@ app.use('/api/sections', sectionRoutes);
 app.use('/api/subjects', subjectRoutes);
 app.use('/api/enrollments', enrollmentRoutes);
 app.use('/api/attendance', attendanceRoutes);
+app.use('/api/exams', examRoutes);
 
 // Error handler (must be last)
 app.use(errorHandler);

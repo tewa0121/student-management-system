@@ -13,7 +13,8 @@ import Classes from './pages/Classes';
 import Sections from './pages/Sections';
 import Subjects from './pages/Subjects';
 import Enrollments from './pages/Enrollments';
-import Attendance from './pages/Attendance'; // <-- NEW IMPORT
+import Attendance from './pages/Attendance';
+import Exams from './pages/Exams'; // <-- NEW IMPORT
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -97,6 +98,11 @@ function App() {
 <Route path="/attendance" element={
   <ProtectedRoute>
     <Attendance />
+  </ProtectedRoute>
+} />
+<Route path="/exams" element={
+  <ProtectedRoute>
+    <Exams />
   </ProtectedRoute>
 } />
       <Route path="/" element={<Navigate to="/dashboard" />} />

@@ -279,6 +279,111 @@ const initDatabase = async () => {
       )
     `);
 
+    // ============ FEES & PAYMENTS TABLES ============
+
+    // --- fee_categories ---
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS fee_categories (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        name VARCHAR(100) NOT NULL UNIQUE,
+        description VARCHAR(255),
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )
+    `);
+
+    // --- fee_structures ---
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS fee_structures (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        academicYearId INT NOT NULL,
+        classId INT NOT NULL,
+        categoryId INT NOT NULL,
+        amount DECIMAL(10,2) NOT NULL,
+        isOptional BOOLEAN DEFAULT FALSE,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (academicYearId) REFERENCES academic_years(id) ON DELETE CASCADE,
+        FOREIGN KEY (classId) REFERENCES classes(id) ON DELETE CASCADE,
+        FOREIGN KEY (categoryId) REFERENCES fee_categories(id) ON DELETE CASCADE
+      )
+    `);
+
+    // --- invoices ---
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS invoices (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        invoiceNumber VARCHAR(50) NOT NULL UNIQUE,
+        studentId INT NOT NULL,
+        academicYearId INT NOT NULL,
+        issueDate DATE NOT NULL,
+        dueDate DATE NOT NULL,
+        totalAmount DECIMAL(10,2) NOT NULL,
+        discountAmount DECIMAL(10,2) DEFAULT 0,
+        scholarshipAmount DECIMAL(10,2) DEFAULT 0,
+        netAmount DECIMAL(10,2) NOT NULL,
+        paidAmount DECIMAL(10,2) DEFAULT 0,
+        balance DECIMAL(10,2) NOT NULL,
+        status ENUM('Draft','Unpaid','Partially Paid','Paid','Overdue','Cancelled') DEFAULT 'Unpaid',
+        notes TEXT,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (studentId) REFERENCES students(id) ON DELETE CASCADE,
+        FOREIGN KEY (academicYearId) REFERENCES academic_years(id) ON DELETE CASCADE
+      )
+    `);
+
+    // --- invoice_items ---
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS invoice_items (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        invoiceId INT NOT NULL,
+        feeStructureId INT NOT NULL,
+        description VARCHAR(255),
+        quantity INT DEFAULT 1,
+        unitPrice DECIMAL(10,2) NOT NULL,
+        total DECIMAL(10,2) NOT NULL,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (invoiceId) REFERENCES invoices(id) ON DELETE CASCADE,
+        FOREIGN KEY (feeStructureId) REFERENCES fee_structures(id) ON DELETE CASCADE
+      )
+    `);
+
+    // --- payments ---
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS payments (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        receiptNumber VARCHAR(50) NOT NULL UNIQUE,
+        invoiceId INT NOT NULL,
+        studentId INT NOT NULL,
+        amount DECIMAL(10,2) NOT NULL,
+        paymentDate DATE NOT NULL,
+        method ENUM('Cash','Bank Transfer','Card','Mobile Payment','Other') NOT NULL,
+        referenceNumber VARCHAR(100),
+        receivedBy INT NULL,
+        notes TEXT,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (invoiceId) REFERENCES invoices(id) ON DELETE CASCADE,
+        FOREIGN KEY (studentId) REFERENCES students(id) ON DELETE CASCADE,
+        FOREIGN KEY (receivedBy) REFERENCES users(id) ON DELETE SET NULL
+      )
+    `);
+
+    // --- discounts_applied ---
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS discounts_applied (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        invoiceId INT NOT NULL,
+        discountType VARCHAR(50),
+        amount DECIMAL(10,2),
+        description VARCHAR(255),
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (invoiceId) REFERENCES invoices(id) ON DELETE CASCADE
+      )
+    `);
+
     // --- roles & permissions ---
     await connection.query(`
       CREATE TABLE IF NOT EXISTS roles (
@@ -398,6 +503,15 @@ const initDatabase = async () => {
       );
     }
 
+    // --- Insert default fee categories ---
+    const feeCategories = ['Tuition', 'Registration', 'Examination', 'Library', 'Transport', 'Laboratory', 'Uniform', 'Other'];
+    for (const cat of feeCategories) {
+      await connection.query(
+        `INSERT IGNORE INTO fee_categories (name) VALUES (?)`,
+        [cat]
+      );
+    }
+
     // 3. Assign ALL permissions to super_admin and admin
     const [superAdminRole] = await connection.query("SELECT id FROM roles WHERE name = 'super_admin'");
     const [adminRole] = await connection.query("SELECT id FROM roles WHERE name = 'admin'");
@@ -427,7 +541,7 @@ const initDatabase = async () => {
       VALUES ('admin@school.com', ?, 'Admin', 'User', 'super_admin', TRUE)
     `, [hashedPassword]);
 
-    console.log('✅ Database and tables initialized with seed data (including academics, attendance, and exams/grading).');
+    console.log('✅ Database and tables initialized with seed data (including academics, attendance, exams/grading, and fees/payments).');
   } catch (error) {
     console.error('❌ Database initialization error:', error);
     throw error;

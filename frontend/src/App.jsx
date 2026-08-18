@@ -8,7 +8,8 @@ import Users from './pages/Users';
 import Students from './pages/Students';
 import StudentForm from './pages/StudentForm';
 import AcademicYears from './pages/AcademicYears';
-import Terms from './pages/Terms';   // <-- NEW IMPORT
+import Terms from './pages/Terms'; 
+import Classes from './pages/Classes';  // <-- NEW IMPORT
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -69,6 +70,11 @@ function App() {
           <Terms />
         </ProtectedRoute>
       } />
+      <Route path="/classes" element={
+  <ProtectedRoute>
+    <Classes />
+  </ProtectedRoute>
+} />
       <Route path="/" element={<Navigate to="/dashboard" />} />
     </Routes>
   );

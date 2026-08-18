@@ -63,10 +63,9 @@ const Sections = () => {
       fetchSections();
     } catch (err) {
       // Show the most detailed error available
-      const msg = err.response?.data?.sqlMessage || 
-                  err.response?.data?.message || 
-                  err.response?.data?.error || 
-                  'Create failed';
+      const data = err.response?.data || {};
+      const msg = data.sqlMessage || data.message || data.error || 'Create failed';
+      console.error('Error details:', data); // also log to console
       alert(msg);
     }
   };
@@ -77,9 +76,8 @@ const Sections = () => {
       await axios.delete(`${SECTIONS_API}/${id}`, getAuthHeader());
       fetchSections();
     } catch (err) {
-      const msg = err.response?.data?.sqlMessage || 
-                  err.response?.data?.message || 
-                  'Delete failed';
+      const data = err.response?.data || {};
+      const msg = data.sqlMessage || data.message || 'Delete failed';
       alert(msg);
     }
   };

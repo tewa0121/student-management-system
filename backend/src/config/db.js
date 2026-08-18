@@ -36,6 +36,23 @@ const initDatabase = async () => {
       )
     `);
 
+    // --- teachers table (extends users) ---
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS teachers (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        userId INT NOT NULL UNIQUE,
+        employeeId VARCHAR(50) UNIQUE,
+        qualification VARCHAR(255),
+        specialization VARCHAR(255),
+        hireDate DATE,
+        employmentType ENUM('Full-time','Part-time','Contract','Intern') DEFAULT 'Full-time',
+        department VARCHAR(100),
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
+      )
+    `);
+
     // --- students table ---
     await connection.query(`
       CREATE TABLE IF NOT EXISTS students (
@@ -384,6 +401,166 @@ const initDatabase = async () => {
       )
     `);
 
+    // ============ TIMETABLE TABLE ============
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS timetable (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        classId INT NOT NULL,
+        sectionId INT NULL,
+        academicYearId INT NOT NULL,
+        termId INT NULL,
+        dayOfWeek ENUM('Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday') NOT NULL,
+        startTime TIME NOT NULL,
+        endTime TIME NOT NULL,
+        subjectId INT NOT NULL,
+        teacherId INT NOT NULL,
+        room VARCHAR(50),
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (classId) REFERENCES classes(id) ON DELETE CASCADE,
+        FOREIGN KEY (sectionId) REFERENCES sections(id) ON DELETE CASCADE,
+        FOREIGN KEY (academicYearId) REFERENCES academic_years(id) ON DELETE CASCADE,
+        FOREIGN KEY (termId) REFERENCES terms(id) ON DELETE SET NULL,
+        FOREIGN KEY (subjectId) REFERENCES subjects(id) ON DELETE CASCADE,
+        FOREIGN KEY (teacherId) REFERENCES users(id) ON DELETE CASCADE,
+        UNIQUE KEY unique_slot (classId, sectionId, dayOfWeek, startTime, endTime, academicYearId)
+      )
+    `);
+
+    // --- assignments ---
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS assignments (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        classId INT NOT NULL,
+        subjectId INT NOT NULL,
+        teacherId INT NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        deadline DATETIME NOT NULL,
+        maxScore DECIMAL(5,2) DEFAULT 100,
+        attachments TEXT,
+        status ENUM('draft','published','closed') DEFAULT 'draft',
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (classId) REFERENCES classes(id) ON DELETE CASCADE,
+        FOREIGN KEY (subjectId) REFERENCES subjects(id) ON DELETE CASCADE,
+        FOREIGN KEY (teacherId) REFERENCES users(id) ON DELETE CASCADE
+      )
+    `);
+
+    // --- assignment_submissions ---
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS assignment_submissions (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        assignmentId INT NOT NULL,
+        studentId INT NOT NULL,
+        submissionText TEXT,
+        attachment VARCHAR(255),
+        submittedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        grade DECIMAL(5,2) DEFAULT NULL,
+        feedback TEXT,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (assignmentId) REFERENCES assignments(id) ON DELETE CASCADE,
+        FOREIGN KEY (studentId) REFERENCES students(id) ON DELETE CASCADE,
+        UNIQUE KEY (assignmentId, studentId)
+      )
+    `);
+
+    // ============ LIBRARY TABLES ============
+
+    // --- library_categories ---
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS library_categories (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        name VARCHAR(100) NOT NULL UNIQUE,
+        description TEXT,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )
+    `);
+
+    // --- library_authors ---
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS library_authors (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        name VARCHAR(100) NOT NULL,
+        biography TEXT,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )
+    `);
+
+    // --- library_publishers ---
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS library_publishers (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        name VARCHAR(100) NOT NULL UNIQUE,
+        address TEXT,
+        phone VARCHAR(20),
+        email VARCHAR(100),
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )
+    `);
+
+    // --- library_books ---
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS library_books (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        isbn VARCHAR(20) UNIQUE,
+        title VARCHAR(255) NOT NULL,
+        authorId INT NOT NULL,
+        categoryId INT NOT NULL,
+        publisherId INT NULL,
+        publicationYear YEAR,
+        edition VARCHAR(20),
+        pages INT,
+        description TEXT,
+        shelfLocation VARCHAR(50),
+        totalCopies INT DEFAULT 1,
+        availableCopies INT DEFAULT 1,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (authorId) REFERENCES library_authors(id) ON DELETE CASCADE,
+        FOREIGN KEY (categoryId) REFERENCES library_categories(id) ON DELETE CASCADE,
+        FOREIGN KEY (publisherId) REFERENCES library_publishers(id) ON DELETE SET NULL
+      )
+    `);
+
+    // --- library_copies ---
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS library_copies (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        bookId INT NOT NULL,
+        copyNumber VARCHAR(20) NOT NULL,
+        status ENUM('Available','Issued','Reserved','Lost','Damaged') DEFAULT 'Available',
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (bookId) REFERENCES library_books(id) ON DELETE CASCADE,
+        UNIQUE KEY (bookId, copyNumber)
+      )
+    `);
+
+    // --- library_transactions ---
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS library_transactions (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        copyId INT NOT NULL,
+        studentId INT NOT NULL,
+        issueDate DATE NOT NULL,
+        dueDate DATE NOT NULL,
+        returnDate DATE NULL,
+        status ENUM('Issued','Returned','Overdue','Lost') DEFAULT 'Issued',
+        fine DECIMAL(10,2) DEFAULT 0,
+        notes TEXT,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (copyId) REFERENCES library_copies(id) ON DELETE CASCADE,
+        FOREIGN KEY (studentId) REFERENCES students(id) ON DELETE CASCADE
+      )
+    `);
+
     // --- roles & permissions ---
     await connection.query(`
       CREATE TABLE IF NOT EXISTS roles (
@@ -445,7 +622,7 @@ const initDatabase = async () => {
       { name: 'students.create', description: 'Create students' },
       { name: 'students.update', description: 'Update students' },
       { name: 'students.delete', description: 'Delete students' },
-      // Academics
+      // Academics (also covers library)
       { name: 'academics.view', description: 'View academics (years, terms, classes, etc.)' },
       { name: 'academics.create', description: 'Create academic entities' },
       { name: 'academics.update', description: 'Update academic entities' },
@@ -541,7 +718,7 @@ const initDatabase = async () => {
       VALUES ('admin@school.com', ?, 'Admin', 'User', 'super_admin', TRUE)
     `, [hashedPassword]);
 
-    console.log('✅ Database and tables initialized with seed data (including academics, attendance, exams/grading, and fees/payments).');
+    console.log('✅ Database and tables initialized with seed data (including academics, attendance, exams/grading, fees/payments, timetable, assignments, and library).');
   } catch (error) {
     console.error('❌ Database initialization error:', error);
     throw error;

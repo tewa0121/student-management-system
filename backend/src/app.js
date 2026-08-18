@@ -3,10 +3,11 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
+
+// Routes
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const studentRoutes = require('./routes/studentRoutes');
-const errorHandler = require('./middleware/errorHandler');
 const academicYearRoutes = require('./routes/academicYearRoutes');
 const termRoutes = require('./routes/termRoutes');
 const classRoutes = require('./routes/classRoutes');
@@ -20,25 +21,34 @@ const invoiceRoutes = require('./routes/invoiceRoutes');
 const feeCategoryRoutes = require('./routes/feeCategoryRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const timetableRoutes = require('./routes/timetableRoutes');
+const assignmentRoutes = require('./routes/assignmentRoutes');
+const libraryRoutes = require('./routes/libraryRoutes');
+
+const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
 
-// --- CORS: allow all origins (for development) ---
+// --- CORS: allow all origins (development only) ---
 app.use(cors({
-  origin: true,                // reflect the request origin
-  credentials: true,           // allow cookies and authorization headers
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  origin: '*',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
 }));
 
-// No need for app.options('*', cors()) – the above middleware handles it
+// Pre-flight requests
+app.options('*', cors());
 
-app.use(helmet());
+// Security & logging
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
 app.use(morgan('dev'));
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Routes
+// API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/students', studentRoutes);
@@ -55,7 +65,20 @@ app.use('/api/invoices', invoiceRoutes);
 app.use('/api/fee-categories', feeCategoryRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/timetable', timetableRoutes);
-// Error handler (must be last)
+app.use('/api/assignments', assignmentRoutes);
+app.use('/api/library', libraryRoutes);
+
+// Health check
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({ message: 'Route not found' });
+});
+
+// Global error handler
 app.use(errorHandler);
 
 module.exports = app;

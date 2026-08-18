@@ -14,7 +14,8 @@ import Sections from './pages/Sections';
 import Subjects from './pages/Subjects';
 import Enrollments from './pages/Enrollments';
 import Attendance from './pages/Attendance';
-import Exams from './pages/Exams'; // <-- NEW IMPORT
+import Exams from './pages/Exams'; 
+import FeeStructures from './pages/FeeStructures';// <-- NEW IMPORT
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -103,6 +104,11 @@ function App() {
 <Route path="/exams" element={
   <ProtectedRoute>
     <Exams />
+  </ProtectedRoute>
+} />
+<Route path="/fee-structures" element={
+  <ProtectedRoute>
+    <FeeStructures />
   </ProtectedRoute>
 } />
       <Route path="/" element={<Navigate to="/dashboard" />} />

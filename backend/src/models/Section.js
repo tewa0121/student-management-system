@@ -18,9 +18,17 @@ const Section = {
   },
   create: async (data) => {
     const { classId, name, teacherId, capacity } = data;
-    // Convert empty strings to NULL for integer fields
-    const teacherIdValue = teacherId && teacherId !== '' ? parseInt(teacherId) : null;
-    const capacityValue = capacity && capacity !== '' ? parseInt(capacity) : 0;
+    
+    // Convert teacherId: if it's not a valid positive integer, set to null
+    let teacherIdValue = null;
+    if (teacherId && !isNaN(parseInt(teacherId)) && parseInt(teacherId) > 0) {
+      teacherIdValue = parseInt(teacherId);
+    }
+    
+    const capacityValue = capacity && !isNaN(parseInt(capacity)) ? parseInt(capacity) : 0;
+    
+    console.log('📥 Inserting section:', { classId, name, teacherIdValue, capacityValue });
+    
     const [result] = await pool.query(
       'INSERT INTO sections (classId, name, teacherId, capacity) VALUES (?, ?, ?, ?)',
       [classId, name, teacherIdValue, capacityValue]
@@ -33,12 +41,15 @@ const Section = {
     if (data.name !== undefined) { fields.push('name = ?'); values.push(data.name); }
     if (data.classId !== undefined) { fields.push('classId = ?'); values.push(data.classId); }
     if (data.teacherId !== undefined) {
-      const val = data.teacherId && data.teacherId !== '' ? parseInt(data.teacherId) : null;
+      let teacherIdValue = null;
+      if (data.teacherId && !isNaN(parseInt(data.teacherId)) && parseInt(data.teacherId) > 0) {
+        teacherIdValue = parseInt(data.teacherId);
+      }
       fields.push('teacherId = ?');
-      values.push(val);
+      values.push(teacherIdValue);
     }
     if (data.capacity !== undefined) {
-      const val = data.capacity && data.capacity !== '' ? parseInt(data.capacity) : 0;
+      const val = data.capacity && !isNaN(parseInt(data.capacity)) ? parseInt(data.capacity) : 0;
       fields.push('capacity = ?');
       values.push(val);
     }

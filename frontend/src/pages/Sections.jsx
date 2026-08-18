@@ -57,15 +57,23 @@ const Sections = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Prepare data: convert empty strings to null for foreign keys
+    const submitData = {
+      classId: form.classId,
+      name: form.name,
+      teacherId: form.teacherId ? parseInt(form.teacherId) : null,
+      capacity: form.capacity ? parseInt(form.capacity) : 0,
+    };
+
     try {
-      await axios.post(SECTIONS_API, form, getAuthHeader());
+      await axios.post(SECTIONS_API, submitData, getAuthHeader());
       setForm({ classId: '', name: '', teacherId: '', capacity: '' });
       fetchSections();
     } catch (err) {
-      // Show the most detailed error available
       const data = err.response?.data || {};
       const msg = data.sqlMessage || data.message || data.error || 'Create failed';
-      console.error('Error details:', data); // also log to console
+      console.error('Error details:', data);
       alert(msg);
     }
   };

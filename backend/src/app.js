@@ -11,6 +11,7 @@ const academicYearRoutes = require('./routes/academicYearRoutes');
 const termRoutes = require('./routes/termRoutes');
 const classRoutes = require('./routes/classRoutes');
 const sectionRoutes = require('./routes/sectionRoutes');
+const subjectRoutes = require('./routes/subjectRoutes');
 
 const app = express();
 
@@ -37,6 +38,7 @@ app.use('/api/academic-years', academicYearRoutes);
 app.use('/api/terms', termRoutes);
 app.use('/api/classes', classRoutes);
 app.use('/api/sections', sectionRoutes);
+app.use('/api/subjects', subjectRoutes);
 
 // Error handler (must be last)
 app.use(errorHandler);

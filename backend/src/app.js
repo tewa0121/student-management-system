@@ -16,7 +16,8 @@ const enrollmentRoutes = require('./routes/enrollmentRoutes');
 const attendanceRoutes = require('./routes/attendanceRoutes');
 const examRoutes = require('./routes/examRoutes');
 const feeStructureRoutes = require('./routes/feeStructureRoutes');
-
+const invoiceRoutes = require('./routes/invoiceRoutes');
+const feeCategoryRoutes = require('./routes/feeCategoryRoutes');
 const app = express();
 
 // --- CORS: allow all origins (for development) ---
@@ -47,6 +48,8 @@ app.use('/api/enrollments', enrollmentRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/exams', examRoutes);
 app.use('/api/fee-structures', feeStructureRoutes);
+app.use('/api/invoices', invoiceRoutes);
+app.use('/api/fee-categories', feeCategoryRoutes);
 // Error handler (must be last)
 app.use(errorHandler);
 

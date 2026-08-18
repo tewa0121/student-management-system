@@ -19,6 +19,7 @@ const feeStructureRoutes = require('./routes/feeStructureRoutes');
 const invoiceRoutes = require('./routes/invoiceRoutes');
 const feeCategoryRoutes = require('./routes/feeCategoryRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
+const timetableRoutes = require('./routes/timetableRoutes');
 
 const app = express();
 
@@ -53,6 +54,7 @@ app.use('/api/fee-structures', feeStructureRoutes);
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/fee-categories', feeCategoryRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/timetable', timetableRoutes);
 // Error handler (must be last)
 app.use(errorHandler);
 

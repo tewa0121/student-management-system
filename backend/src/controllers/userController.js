@@ -1,15 +1,15 @@
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 
-// Get all users (paginated, searchable)
 const getUsers = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const search = req.query.search || '';
+    const role = req.query.role || null;   // <-- UPDATED: accept role filter
 
-    const users = await User.findAll(page, limit, search);
-    const total = await User.countAll(search);
+    const users = await User.findAll(page, limit, search, role);
+    const total = await User.countAll(search, role);
 
     res.json({
       users,
@@ -25,7 +25,6 @@ const getUsers = async (req, res, next) => {
   }
 };
 
-// Get a single user by ID
 const getUser = async (req, res, next) => {
   try {
     const user = await User.findById(req.params.id);
@@ -38,7 +37,6 @@ const getUser = async (req, res, next) => {
   }
 };
 
-// Create a new user (admin only)
 const createUser = async (req, res, next) => {
   try {
     const { email, password, firstName, lastName, role } = req.body;
@@ -66,7 +64,6 @@ const createUser = async (req, res, next) => {
   }
 };
 
-// Update a user
 const updateUser = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -88,12 +85,10 @@ const updateUser = async (req, res, next) => {
   }
 };
 
-// Delete a user
 const deleteUser = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    // Prevent deleting yourself
     if (parseInt(id) === req.user.id) {
       return res.status(400).json({ message: 'You cannot delete your own account' });
     }
@@ -109,7 +104,6 @@ const deleteUser = async (req, res, next) => {
   }
 };
 
-// Get all available roles
 const getRoles = async (req, res, next) => {
   try {
     const roles = await User.getRoles();
@@ -119,7 +113,6 @@ const getRoles = async (req, res, next) => {
   }
 };
 
-// Get all permissions
 const getPermissions = async (req, res, next) => {
   try {
     const permissions = await User.getPermissions();
@@ -129,7 +122,6 @@ const getPermissions = async (req, res, next) => {
   }
 };
 
-// Get permissions for a specific role
 const getRolePermissions = async (req, res, next) => {
   try {
     const { roleId } = req.params;
@@ -140,7 +132,6 @@ const getRolePermissions = async (req, res, next) => {
   }
 };
 
-// Assign permission to role
 const assignPermission = async (req, res, next) => {
   try {
     const { roleId, permissionId } = req.body;
@@ -151,7 +142,6 @@ const assignPermission = async (req, res, next) => {
   }
 };
 
-// Remove permission from role
 const removePermission = async (req, res, next) => {
   try {
     const { roleId, permissionId } = req.body;

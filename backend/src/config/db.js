@@ -9,6 +9,7 @@ const pool = mysql.createPool({
   port: process.env.DB_PORT,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,   // <-- FIX: set default database
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
@@ -17,8 +18,9 @@ const pool = mysql.createPool({
 const initDatabase = async () => {
   const connection = await pool.getConnection();
   try {
+    // Create database if it doesn't exist (connection currently has no default DB)
     await connection.query(`CREATE DATABASE IF NOT EXISTS ${process.env.DB_NAME}`);
-    await connection.query(`USE ${process.env.DB_NAME}`);
+    await connection.query(`USE ${process.env.DB_NAME}`); // select for this connection
 
     // --- users table ---
     await connection.query(`
@@ -198,7 +200,7 @@ const initDatabase = async () => {
       )
     `);
 
-    // --- roles & permissions (already existed, but we keep them) ---
+    // --- roles & permissions ---
     await connection.query(`
       CREATE TABLE IF NOT EXISTS roles (
         id INT PRIMARY KEY AUTO_INCREMENT,
@@ -247,7 +249,7 @@ const initDatabase = async () => {
       );
     }
 
-    // 2. Insert default permissions (including academics)
+    // 2. Insert default permissions
     const permissions = [
       // Users
       { name: 'users.view', description: 'View users' },

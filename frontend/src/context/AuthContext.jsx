@@ -1,21 +1,20 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import { login as apiLogin, register as apiRegister } from '../api/auth';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    const token = localStorage.getItem('token');
+  // 1. Read localStorage synchronously on initial render
+  const [user, setUser] = useState(() => {
     const storedUser = localStorage.getItem('user');
-    if (token && storedUser) {
-      setUser(JSON.parse(storedUser));
+    if (storedUser) {
+      try { return JSON.parse(storedUser); } catch { return null; }
     }
-    setLoading(false);
-  }, []);
+    return null;
+  });
+
+  const [loading, setLoading] = useState(false); // no need for loading – user is ready immediately
+  const [error, setError] = useState(null);
 
   const login = async (email, password) => {
     try {

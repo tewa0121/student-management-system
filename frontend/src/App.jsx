@@ -7,11 +7,25 @@ import Dashboard from './pages/Dashboard';
 import Users from './pages/Users';
 import Students from './pages/Students';
 import StudentForm from './pages/StudentForm';
-import AcademicYears from './pages/AcademicYears';   // <-- new import
+import AcademicYears from './pages/AcademicYears';
+import Terms from './pages/Terms';   // <-- NEW IMPORT
 
 const ProtectedRoute = ({ children }) => {
-  const { user } = useAuth();
-  return user ? children : <Navigate to="/login" />;
+  const { user, loading } = useAuth();
+
+  // Debugging: log the current auth state
+  console.log('🔒 ProtectedRoute - loading:', loading, 'user:', user);
+
+  if (loading) {
+    return <div>Loading authentication...</div>;
+  }
+
+  if (!user) {
+    console.warn('🔒 No user, redirecting to login');
+    return <Navigate to="/login" />;
+  }
+
+  return children;
 };
 
 function App() {
@@ -44,10 +58,15 @@ function App() {
           <StudentForm />
         </ProtectedRoute>
       } />
-      {/* New Academic Years route */}
       <Route path="/academic-years" element={
         <ProtectedRoute>
           <AcademicYears />
+        </ProtectedRoute>
+      } />
+      {/* NEW Terms route */}
+      <Route path="/terms" element={
+        <ProtectedRoute>
+          <Terms />
         </ProtectedRoute>
       } />
       <Route path="/" element={<Navigate to="/dashboard" />} />

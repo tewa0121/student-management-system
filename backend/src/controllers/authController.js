@@ -26,24 +26,45 @@ const register = async (req, res, next) => {
       user: { id: userId, email, firstName, lastName, role: role || 'student' },
     });
   } catch (error) {
+    console.error('Registration error:', error);
     next(error);
   }
 };
 
 const login = async (req, res, next) => {
   try {
+    console.log('Login attempt for email:', req.body.email);
+
     const { email, password } = req.body;
 
+    console.log('Querying user...');
     const user = await User.findByEmail(email);
-    if (!user) return res.status(401).json({ message: 'Invalid credentials' });
+    console.log('User found:', user);
 
+    if (!user) {
+      console.log('User not found');
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    console.log('Comparing password...');
     const isMatch = await comparePassword(password, user.password);
-    if (!isMatch) return res.status(401).json({ message: 'Invalid credentials' });
+    console.log('Password match:', isMatch);
 
-    if (!user.isActive) return res.status(403).json({ message: 'Account disabled' });
+    if (!isMatch) {
+      console.log('Password does not match');
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
 
+    console.log('Checking isActive...');
+    if (!user.isActive) {
+      console.log('Account is inactive');
+      return res.status(403).json({ message: 'Account disabled' });
+    }
+
+    console.log('Generating token...');
     const token = generateToken({ id: user.id, email: user.email, role: user.role });
 
+    console.log('Login successful for:', email);
     res.json({
       message: 'Login successful',
       token,
@@ -56,6 +77,7 @@ const login = async (req, res, next) => {
       },
     });
   } catch (error) {
+    console.error('Login error (full stack):', error);
     next(error);
   }
 };

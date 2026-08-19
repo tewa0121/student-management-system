@@ -29,6 +29,7 @@ import LibraryAuthors from './pages/LibraryAuthors';
 import LibraryPublishers from './pages/LibraryPublishers';
 import Announcements from './pages/Announcements';
 import Notifications from './pages/Notifications';
+import Teachers from './pages/Teachers';
 
 // Layout component for authenticated pages
 const ProtectedLayout = ({ children }) => {
@@ -197,6 +198,16 @@ function App() {
           <Notifications />
         </ProtectedLayout>
       } />
+
+      {/* Teachers (reuses Users) */}
+      <Route path="/teachers" element={
+        <ProtectedLayout>
+          <Teachers />
+        </ProtectedLayout>
+      } />
+
+      {/* Redirect /fees to /fee-structures */}
+      <Route path="/fees" element={<Navigate to="/fee-structures" />} />
 
       <Route path="/" element={<Navigate to="/dashboard" />} />
     </Routes>

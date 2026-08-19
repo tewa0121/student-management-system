@@ -25,6 +25,8 @@ const assignmentRoutes = require('./routes/assignmentRoutes');
 const libraryRoutes = require('./routes/libraryRoutes');
 const announcementRoutes = require('./routes/announcementRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
+const reportRoutes = require('./routes/reportRoutes');
+// ...
 
 const errorHandler = require('./middleware/errorHandler');
 
@@ -70,6 +72,7 @@ app.use('/api/assignments', assignmentRoutes);
 app.use('/api/library', libraryRoutes);
 app.use('/api/announcements', announcementRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/reports', reportRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

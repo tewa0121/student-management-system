@@ -30,8 +30,10 @@ import LibraryPublishers from './pages/LibraryPublishers';
 import Announcements from './pages/Announcements';
 import Notifications from './pages/Notifications';
 import Teachers from './pages/Teachers';
+import ExamMarks from './pages/ExamMarks';
+import ReportCard from './pages/ReportCard';
+import ParentDashboard from './pages/ParentDashboard';
 
-// Layout component for authenticated pages
 const ProtectedLayout = ({ children }) => {
   const { user, loading } = useAuth();
 
@@ -73,6 +75,11 @@ function App() {
         </ProtectedLayout>
       } />
       <Route path="/users/new" element={
+        <ProtectedLayout>
+          <UserForm />
+        </ProtectedLayout>
+      } />
+      <Route path="/users/:id/edit" element={
         <ProtectedLayout>
           <UserForm />
         </ProtectedLayout>
@@ -199,14 +206,30 @@ function App() {
         </ProtectedLayout>
       } />
 
-      {/* Teachers (reuses Users) */}
+      {/* Teachers */}
       <Route path="/teachers" element={
         <ProtectedLayout>
           <Teachers />
         </ProtectedLayout>
       } />
+      <Route path="/exam-marks" element={
+  <ProtectedLayout>
+    <ExamMarks />
+  </ProtectedLayout>
+} />
 
-      {/* Redirect /fees to /fee-structures */}
+<Route path="/report-card" element={
+  <ProtectedLayout>
+    <ReportCard />
+  </ProtectedLayout>
+} />
+<Route path="/parent-dashboard" element={
+  <ProtectedLayout>
+    <ParentDashboard />
+  </ProtectedLayout>
+} />
+
+      {/* Redirects */}
       <Route path="/fees" element={<Navigate to="/fee-structures" />} />
 
       <Route path="/" element={<Navigate to="/dashboard" />} />

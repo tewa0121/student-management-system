@@ -13,9 +13,6 @@ const issueBook = async (req, res, next) => {
   try {
     const { bookId, studentId, issueDate, dueDate, notes } = req.body;
 
-    // Debug: log received data
-    console.log('📝 Issue request:', { bookId, studentId, issueDate, dueDate, notes });
-
     if (!bookId || !studentId || !issueDate || !dueDate) {
       return res.status(400).json({ 
         message: 'Missing required fields: bookId, studentId, issueDate, dueDate',
@@ -23,7 +20,7 @@ const issueBook = async (req, res, next) => {
       });
     }
 
-    // Find an available copy for this book
+    // Find an available copy
     const [copies] = await pool.query(
       'SELECT * FROM library_copies WHERE bookId = ? AND status = "Available" LIMIT 1',
       [bookId]
@@ -35,16 +32,14 @@ const issueBook = async (req, res, next) => {
     const copyId = copy.id;
 
     // Create transaction
-    const id = await Transaction.create({ 
-      copyId, 
-      studentId, 
-      issueDate, 
-      dueDate, 
-      status: 'Issued', 
-      notes 
-    });
+    const id = await Transaction.create({ copyId, studentId, issueDate, dueDate, status: 'Issued', notes });
     // Update copy status
     await pool.query('UPDATE library_copies SET status = ? WHERE id = ?', ['Issued', copyId]);
+    // Decrement availableCopies
+    await pool.query(
+      'UPDATE library_books SET availableCopies = availableCopies - 1 WHERE id = ?',
+      [bookId]
+    );
 
     const newTransaction = await Transaction.findById(id);
     res.status(201).json({ message: 'Book issued', transaction: newTransaction });
@@ -71,10 +66,22 @@ const returnBook = async (req, res, next) => {
     const now = new Date(returnDate);
     if (now > dueDate) {
       const diffDays = Math.ceil((now - dueDate) / (1000 * 60 * 60 * 24));
-      fine = diffDays * 5; // $5 per day
+      fine = diffDays * 5;
     }
     await Transaction.update(id, { returnDate, status: 'Returned', fine });
     await pool.query('UPDATE library_copies SET status = ? WHERE id = ?', ['Available', transaction.copyId]);
+    // Increment availableCopies
+    const [bookRow] = await pool.query(
+      'SELECT bookId FROM library_copies WHERE id = ?',
+      [transaction.copyId]
+    );
+    const bookId = bookRow[0]?.bookId;
+    if (bookId) {
+      await pool.query(
+        'UPDATE library_books SET availableCopies = availableCopies + 1 WHERE id = ?',
+        [bookId]
+      );
+    }
 
     const updatedTransaction = await Transaction.findById(id);
     res.json({ message: 'Book returned', transaction: updatedTransaction });

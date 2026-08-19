@@ -4,6 +4,7 @@ import { useAuth } from './context/AuthContext';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
 import Dashboard from './pages/Dashboard';
+import Navbar from './components/common/Navbar';
 import Users from './pages/Users';
 import UserForm from './pages/UserForm';
 import Students from './pages/Students';
@@ -26,8 +27,11 @@ import LibraryTransactions from './pages/LibraryTransactions';
 import LibraryCategories from './pages/LibraryCategories';
 import LibraryAuthors from './pages/LibraryAuthors';
 import LibraryPublishers from './pages/LibraryPublishers';
+import Announcements from './pages/Announcements';
+import Notifications from './pages/Notifications';
 
-const ProtectedRoute = ({ children }) => {
+// Layout component for authenticated pages
+const ProtectedLayout = ({ children }) => {
   const { user, loading } = useAuth();
 
   if (loading) {
@@ -38,139 +42,160 @@ const ProtectedRoute = ({ children }) => {
     return <Navigate to="/login" />;
   }
 
-  return children;
+  return (
+    <>
+      <Navbar />
+      <div style={{ padding: '20px' }}>
+        {children}
+      </div>
+    </>
+  );
 };
 
 function App() {
   return (
     <Routes>
+      {/* Public routes */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
+      {/* Protected routes with Navbar */}
       <Route path="/dashboard" element={
-        <ProtectedRoute>
+        <ProtectedLayout>
           <Dashboard />
-        </ProtectedRoute>
+        </ProtectedLayout>
       } />
 
       <Route path="/users" element={
-        <ProtectedRoute>
+        <ProtectedLayout>
           <Users />
-        </ProtectedRoute>
+        </ProtectedLayout>
       } />
       <Route path="/users/new" element={
-        <ProtectedRoute>
+        <ProtectedLayout>
           <UserForm />
-        </ProtectedRoute>
+        </ProtectedLayout>
       } />
 
       <Route path="/students" element={
-        <ProtectedRoute>
+        <ProtectedLayout>
           <Students />
-        </ProtectedRoute>
+        </ProtectedLayout>
       } />
       <Route path="/students/new" element={
-        <ProtectedRoute>
+        <ProtectedLayout>
           <StudentForm />
-        </ProtectedRoute>
+        </ProtectedLayout>
       } />
       <Route path="/students/:id/edit" element={
-        <ProtectedRoute>
+        <ProtectedLayout>
           <StudentForm />
-        </ProtectedRoute>
+        </ProtectedLayout>
       } />
 
       <Route path="/academic-years" element={
-        <ProtectedRoute>
+        <ProtectedLayout>
           <AcademicYears />
-        </ProtectedRoute>
+        </ProtectedLayout>
       } />
       <Route path="/terms" element={
-        <ProtectedRoute>
+        <ProtectedLayout>
           <Terms />
-        </ProtectedRoute>
+        </ProtectedLayout>
       } />
       <Route path="/classes" element={
-        <ProtectedRoute>
+        <ProtectedLayout>
           <Classes />
-        </ProtectedRoute>
+        </ProtectedLayout>
       } />
       <Route path="/sections" element={
-        <ProtectedRoute>
+        <ProtectedLayout>
           <Sections />
-        </ProtectedRoute>
+        </ProtectedLayout>
       } />
       <Route path="/subjects" element={
-        <ProtectedRoute>
+        <ProtectedLayout>
           <Subjects />
-        </ProtectedRoute>
+        </ProtectedLayout>
       } />
       <Route path="/enrollments" element={
-        <ProtectedRoute>
+        <ProtectedLayout>
           <Enrollments />
-        </ProtectedRoute>
+        </ProtectedLayout>
       } />
       <Route path="/attendance" element={
-        <ProtectedRoute>
+        <ProtectedLayout>
           <Attendance />
-        </ProtectedRoute>
+        </ProtectedLayout>
       } />
       <Route path="/exams" element={
-        <ProtectedRoute>
+        <ProtectedLayout>
           <Exams />
-        </ProtectedRoute>
+        </ProtectedLayout>
       } />
       <Route path="/fee-structures" element={
-        <ProtectedRoute>
+        <ProtectedLayout>
           <FeeStructures />
-        </ProtectedRoute>
+        </ProtectedLayout>
       } />
       <Route path="/invoices" element={
-        <ProtectedRoute>
+        <ProtectedLayout>
           <Invoices />
-        </ProtectedRoute>
+        </ProtectedLayout>
       } />
       <Route path="/payments" element={
-        <ProtectedRoute>
+        <ProtectedLayout>
           <Payments />
-        </ProtectedRoute>
+        </ProtectedLayout>
       } />
       <Route path="/timetable" element={
-        <ProtectedRoute>
+        <ProtectedLayout>
           <Timetable />
-        </ProtectedRoute>
+        </ProtectedLayout>
       } />
       <Route path="/assignments" element={
-        <ProtectedRoute>
+        <ProtectedLayout>
           <Assignments />
-        </ProtectedRoute>
+        </ProtectedLayout>
       } />
 
       {/* Library Routes */}
       <Route path="/library/books" element={
-        <ProtectedRoute>
+        <ProtectedLayout>
           <LibraryBooks />
-        </ProtectedRoute>
+        </ProtectedLayout>
       } />
       <Route path="/library/transactions" element={
-        <ProtectedRoute>
+        <ProtectedLayout>
           <LibraryTransactions />
-        </ProtectedRoute>
+        </ProtectedLayout>
       } />
       <Route path="/library/categories" element={
-        <ProtectedRoute>
+        <ProtectedLayout>
           <LibraryCategories />
-        </ProtectedRoute>
+        </ProtectedLayout>
       } />
       <Route path="/library/authors" element={
-        <ProtectedRoute>
+        <ProtectedLayout>
           <LibraryAuthors />
-        </ProtectedRoute>
+        </ProtectedLayout>
       } />
       <Route path="/library/publishers" element={
-        <ProtectedRoute>
+        <ProtectedLayout>
           <LibraryPublishers />
-        </ProtectedRoute>
+        </ProtectedLayout>
+      } />
+
+      {/* Announcements & Notifications */}
+      <Route path="/announcements" element={
+        <ProtectedLayout>
+          <Announcements />
+        </ProtectedLayout>
+      } />
+      <Route path="/notifications" element={
+        <ProtectedLayout>
+          <Notifications />
+        </ProtectedLayout>
       } />
 
       <Route path="/" element={<Navigate to="/dashboard" />} />

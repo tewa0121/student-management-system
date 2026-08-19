@@ -23,6 +23,8 @@ const paymentRoutes = require('./routes/paymentRoutes');
 const timetableRoutes = require('./routes/timetableRoutes');
 const assignmentRoutes = require('./routes/assignmentRoutes');
 const libraryRoutes = require('./routes/libraryRoutes');
+const announcementRoutes = require('./routes/announcementRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
 
 const errorHandler = require('./middleware/errorHandler');
 
@@ -66,6 +68,8 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/timetable', timetableRoutes);
 app.use('/api/assignments', assignmentRoutes);
 app.use('/api/library', libraryRoutes);
+app.use('/api/announcements', announcementRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

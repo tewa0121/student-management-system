@@ -48,9 +48,4 @@ const deletePublisher = async (req, res, next) => {
   }
 };
 
-module.exports = {
-  getPublishers,
-  createPublisher,
-  updatePublisher,
-  deletePublisher
-};
+module.exports = { getPublishers, createPublisher, updatePublisher, deletePublisher };

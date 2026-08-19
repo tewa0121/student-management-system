@@ -1,51 +1,87 @@
-const Category = require('../models/LibraryCategory');
+const Transaction = require('../models/LibraryTransaction');
+const { pool } = require('../config/db');
 
-const getCategories = async (req, res, next) => {
+const getTransactions = async (req, res, next) => {
   try {
-    const categories = await Category.findAll();
-    res.json(categories);
+    const { studentId, status } = req.query;
+    const transactions = await Transaction.findAll({ studentId, status });
+    res.json(transactions);
   } catch (error) { next(error); }
 };
 
-const createCategory = async (req, res, next) => {
+const issueBook = async (req, res, next) => {
   try {
-    const { name, description } = req.body;
-    if (!name) return res.status(400).json({ message: 'Name is required' });
-    const id = await Category.create({ name, description });
-    const newCat = await Category.findById(id);
-    res.status(201).json({ message: 'Category created', category: newCat });
+    const { bookId, studentId, issueDate, dueDate, notes } = req.body;
+
+    // Debug: log received data
+    console.log('📝 Issue request:', { bookId, studentId, issueDate, dueDate, notes });
+
+    if (!bookId || !studentId || !issueDate || !dueDate) {
+      return res.status(400).json({ 
+        message: 'Missing required fields: bookId, studentId, issueDate, dueDate',
+        received: { bookId, studentId, issueDate, dueDate }
+      });
+    }
+
+    // Find an available copy for this book
+    const [copies] = await pool.query(
+      'SELECT * FROM library_copies WHERE bookId = ? AND status = "Available" LIMIT 1',
+      [bookId]
+    );
+    if (copies.length === 0) {
+      return res.status(400).json({ message: 'No available copies for this book' });
+    }
+    const copy = copies[0];
+    const copyId = copy.id;
+
+    // Create transaction
+    const id = await Transaction.create({ 
+      copyId, 
+      studentId, 
+      issueDate, 
+      dueDate, 
+      status: 'Issued', 
+      notes 
+    });
+    // Update copy status
+    await pool.query('UPDATE library_copies SET status = ? WHERE id = ?', ['Issued', copyId]);
+
+    const newTransaction = await Transaction.findById(id);
+    res.status(201).json({ message: 'Book issued', transaction: newTransaction });
   } catch (error) {
-    console.error('Create category error:', error);
-    res.status(500).json({ error: error.message });
+    console.error('❌ Issue book error:', error);
+    res.status(500).json({ 
+      message: 'Failed to issue book', 
+      error: error.message, 
+      sqlMessage: error.sqlMessage || null 
+    });
   }
 };
 
-const updateCategory = async (req, res, next) => {
+const returnBook = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const existing = await Category.findById(id);
-    if (!existing) return res.status(404).json({ message: 'Category not found' });
-    const updated = await Category.update(id, req.body);
-    if (!updated) return res.status(400).json({ message: 'No changes made' });
-    const updatedCat = await Category.findById(id);
-    res.json({ message: 'Category updated', category: updatedCat });
+    const transaction = await Transaction.findById(id);
+    if (!transaction) return res.status(404).json({ message: 'Transaction not found' });
+    if (transaction.status === 'Returned') return res.status(400).json({ message: 'Book already returned' });
+
+    const returnDate = new Date().toISOString().split('T')[0];
+    let fine = 0;
+    const dueDate = new Date(transaction.dueDate);
+    const now = new Date(returnDate);
+    if (now > dueDate) {
+      const diffDays = Math.ceil((now - dueDate) / (1000 * 60 * 60 * 24));
+      fine = diffDays * 5; // $5 per day
+    }
+    await Transaction.update(id, { returnDate, status: 'Returned', fine });
+    await pool.query('UPDATE library_copies SET status = ? WHERE id = ?', ['Available', transaction.copyId]);
+
+    const updatedTransaction = await Transaction.findById(id);
+    res.json({ message: 'Book returned', transaction: updatedTransaction });
   } catch (error) {
-    console.error('Update category error:', error);
+    console.error('❌ Return book error:', error);
     next(error);
   }
 };
 
-const deleteCategory = async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    const existing = await Category.findById(id);
-    if (!existing) return res.status(404).json({ message: 'Category not found' });
-    await Category.delete(id);
-    res.json({ message: 'Category deleted' });
-  } catch (error) {
-    console.error('Delete category error:', error);
-    next(error);
-  }
-};
-
-module.exports = { getCategories, createCategory, updateCategory, deleteCategory };
+module.exports = { getTransactions, issueBook, returnBook };

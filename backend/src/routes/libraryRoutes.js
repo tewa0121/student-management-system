@@ -12,9 +12,9 @@ const {
 
 // Transaction controllers
 const {
+  getTransactions,
   issueBook,
-  returnBook,
-  getTransactions
+  returnBook
 } = require('../controllers/libraryTransactionController');
 
 // Category controllers

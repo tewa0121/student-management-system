@@ -36,8 +36,7 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
 }));
 
-// Pre-flight requests
-app.options('*', cors());
+// ⚠️ REMOVED: app.options('*', cors()); // This line caused the error!
 
 // Security & logging
 app.use(helmet({

@@ -14,7 +14,7 @@ const LibraryTransactions = () => {
   const [error, setError] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({
-    copyId: '',
+    bookId: '',
     studentId: '',
     issueDate: new Date().toISOString().split('T')[0],
     dueDate: '',
@@ -49,11 +49,13 @@ const LibraryTransactions = () => {
     e.preventDefault();
     try {
       await axios.post(`${API_URL}/transactions/issue`, form, getAuthHeader());
-      setForm({ copyId: '', studentId: '', issueDate: new Date().toISOString().split('T')[0], dueDate: '', notes: '' });
+      setForm({ bookId: '', studentId: '', issueDate: new Date().toISOString().split('T')[0], dueDate: '', notes: '' });
       setShowForm(false);
       fetchData();
     } catch (err) {
-      alert(err.response?.data?.message || 'Issue failed');
+      const data = err.response?.data || {};
+      const msg = data.sqlMessage || data.message || data.error || 'Issue failed';
+      alert(msg);
     }
   };
 
@@ -83,7 +85,7 @@ const LibraryTransactions = () => {
         <form onSubmit={handleIssue} style={{ marginBottom: 20, padding: 20, border: '1px solid #ccc', borderRadius: 8 }}>
           <h3>Issue Book</h3>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-            <select name="copyId" value={form.copyId} onChange={handleChange} required>
+            <select name="bookId" value={form.bookId} onChange={handleChange} required>
               <option value="">Select Book</option>
               {books.filter(b => b.availableCopies > 0).map(b => (
                 <option key={b.id} value={b.id}>{b.title} (Available: {b.availableCopies})</option>

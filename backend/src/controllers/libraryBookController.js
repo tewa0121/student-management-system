@@ -1,4 +1,5 @@
 const LibraryBook = require('../models/LibraryBook');
+const { pool } = require('../config/db');
 
 const getBooks = async (req, res, next) => {
   try {
@@ -22,24 +23,58 @@ const getBook = async (req, res, next) => {
 
 const createBook = async (req, res, next) => {
   try {
-    const { isbn, title, authorId, categoryId, publisherId, publicationYear, edition, pages, description, shelfLocation, totalCopies } = req.body;
+    const { 
+      isbn, title, authorId, categoryId, publisherId, 
+      publicationYear, edition, pages, description, 
+      shelfLocation, totalCopies 
+    } = req.body;
+
+    console.log('📚 Creating book with data:', req.body);
+
     if (!title || !authorId || !categoryId) {
-      return res.status(400).json({ message: 'Missing required fields' });
+      return res.status(400).json({ message: 'Missing required fields: title, authorId, categoryId' });
     }
-    const id = await LibraryBook.create({ isbn, title, authorId, categoryId, publisherId, publicationYear, edition, pages, description, shelfLocation, totalCopies });
+
+    // Convert empty strings to null for optional fields
+    const finalPublisherId = publisherId && publisherId !== '' ? parseInt(publisherId) : null;
+    const finalTotalCopies = totalCopies && totalCopies !== '' ? parseInt(totalCopies) : 1;
+
+    // Create the book
+    const id = await LibraryBook.create({ 
+      isbn, 
+      title, 
+      authorId: parseInt(authorId), 
+      categoryId: parseInt(categoryId), 
+      publisherId: finalPublisherId, 
+      publicationYear, 
+      edition, 
+      pages: pages ? parseInt(pages) : null, 
+      description, 
+      shelfLocation, 
+      totalCopies: finalTotalCopies 
+    });
+
+    // 🔥 Create individual copies for the book
+    for (let i = 1; i <= finalTotalCopies; i++) {
+      await pool.query(
+        'INSERT INTO library_copies (bookId, copyNumber, status) VALUES (?, ?, ?)',
+        [id, String(i).padStart(2, '0'), 'Available']
+      );
+    }
+
     const newBook = await LibraryBook.findById(id);
     res.status(201).json({ message: 'Book added', book: newBook });
   } catch (error) {
-    console.error('Create book error:', error);
+    console.error('❌ Create book error:', error);
     res.status(500).json({
       message: 'Failed to add book',
       error: error.message,
       sqlMessage: error.sqlMessage || null,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 };
 
-// updateBook, deleteBook similar
 const updateBook = async (req, res, next) => {
   try {
     const { id } = req.params;

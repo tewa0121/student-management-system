@@ -1,164 +1,128 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const PAYMENTS_API = 'http://localhost:5000/api/payments';
-const INVOICES_API = 'http://localhost:5000/api/invoices';
-const STUDENTS_API = 'http://localhost:5000/api/students';
-
+const API_URL = 'http://localhost:5000/api/library';
 const getAuthHeader = () => ({
   headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
 });
 
-const Payments = () => {
-  const [payments, setPayments] = useState([]);
-  const [invoices, setInvoices] = useState([]);
+const LibraryTransactions = () => {
+  const [transactions, setTransactions] = useState([]);
+  const [books, setBooks] = useState([]);
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [filter, setFilter] = useState({ studentId: '', invoiceId: '' });
+  const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({
-    invoiceId: '',
+    bookId: '',        // <-- changed from copyId to bookId
     studentId: '',
-    amount: '',
-    paymentDate: new Date().toISOString().split('T')[0],
-    method: 'Cash',
-    referenceNumber: '',
+    issueDate: new Date().toISOString().split('T')[0],
+    dueDate: '',
     notes: '',
   });
 
-  const fetchStudents = async () => {
+  const fetchData = async () => {
     try {
-      const res = await axios.get(`${STUDENTS_API}?limit=1000`, getAuthHeader());
-      setStudents(res.data.students || []);
-    } catch (err) { console.error(err); }
-  };
-  const fetchInvoices = async () => {
-    try {
-      const res = await axios.get(INVOICES_API, getAuthHeader());
-      setInvoices(res.data);
-    } catch (err) { console.error(err); }
-  };
-  const fetchPayments = async () => {
-    try {
-      let url = PAYMENTS_API;
-      const params = new URLSearchParams();
-      if (filter.studentId) params.append('studentId', filter.studentId);
-      if (filter.invoiceId) params.append('invoiceId', filter.invoiceId);
-      if (params.toString()) url += '?' + params.toString();
-      const res = await axios.get(url, getAuthHeader());
-      setPayments(res.data);
-      setError('');
+      const [transRes, booksRes, studentsRes] = await Promise.all([
+        axios.get(`${API_URL}/transactions`, getAuthHeader()),
+        axios.get(`${API_URL}/books`, getAuthHeader()),
+        axios.get('http://localhost:5000/api/students?limit=1000', getAuthHeader()),
+      ]);
+      setTransactions(transRes.data);
+      setBooks(booksRes.data);
+      setStudents(studentsRes.data.students || []);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to fetch payments');
+      setError('Failed to load data');
+      console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    Promise.all([fetchStudents(), fetchInvoices(), fetchPayments()]);
-  }, []);
-
-  useEffect(() => {
-    fetchPayments();
-  }, [filter]);
-
-  const handleFilterChange = (e) => {
-    setFilter({ ...filter, [e.target.name]: e.target.value });
-  };
+  useEffect(() => { fetchData(); }, []);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleIssue = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(PAYMENTS_API, form, getAuthHeader());
-      setForm({ invoiceId: '', studentId: '', amount: '', paymentDate: new Date().toISOString().split('T')[0], method: 'Cash', referenceNumber: '', notes: '' });
-      fetchPayments();
-      fetchInvoices(); // refresh invoices to update balances
+      await axios.post(`${API_URL}/transactions/issue`, form, getAuthHeader());
+      setForm({ bookId: '', studentId: '', issueDate: new Date().toISOString().split('T')[0], dueDate: '', notes: '' });
+      setShowForm(false);
+      fetchData();
     } catch (err) {
       const data = err.response?.data || {};
-      const msg = data.sqlMessage || data.message || data.error || 'Record failed';
+      const msg = data.sqlMessage || data.message || data.error || 'Issue failed';
       alert(msg);
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Delete this payment? This will revert the invoice balance.')) return;
+  const handleReturn = async (id) => {
+    if (!window.confirm('Confirm return?')) return;
     try {
-      await axios.delete(`${PAYMENTS_API}/${id}`, getAuthHeader());
-      fetchPayments();
-      fetchInvoices();
+      await axios.put(`${API_URL}/transactions/${id}/return`, {}, getAuthHeader());
+      fetchData();
     } catch (err) {
-      alert(err.response?.data?.message || 'Delete failed');
+      alert(err.response?.data?.message || 'Return failed');
     }
   };
 
-  if (loading) return <div>Loading payments...</div>;
+  if (loading) return <div>Loading transactions...</div>;
   if (error) return <div style={{ color: 'red' }}>{error}</div>;
 
   return (
     <div style={{ padding: 20 }}>
-      <h1>Payments</h1>
-
-      <div style={{ marginBottom: 20, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-        <select name="studentId" value={filter.studentId} onChange={handleFilterChange} style={{ padding: 8 }}>
-          <option value="">All Students</option>
-          {students.map(s => <option key={s.id} value={s.id}>{s.firstName} {s.lastName}</option>)}
-        </select>
-        <select name="invoiceId" value={filter.invoiceId} onChange={handleFilterChange} style={{ padding: 8 }}>
-          <option value="">All Invoices</option>
-          {invoices.map(inv => <option key={inv.id} value={inv.id}>{inv.invoiceNumber}</option>)}
-        </select>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+        <h1>Library Transactions</h1>
+        <button onClick={() => setShowForm(!showForm)} style={{ padding: '8px 16px' }}>
+          {showForm ? 'Cancel' : '+ Issue Book'}
+        </button>
       </div>
 
-      <h3>Record New Payment</h3>
-      <form onSubmit={handleSubmit} style={{ marginBottom: 20, display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
-        <select name="invoiceId" value={form.invoiceId} onChange={handleChange} required style={{ padding: 8 }}>
-          <option value="">Select Invoice</option>
-          {invoices.filter(inv => inv.balance > 0).map(inv => (
-            <option key={inv.id} value={inv.id}>{inv.invoiceNumber} (Balance: ${inv.balance})</option>
-          ))}
-        </select>
-        <select name="studentId" value={form.studentId} onChange={handleChange} required style={{ padding: 8 }}>
-          <option value="">Select Student</option>
-          {students.map(s => <option key={s.id} value={s.id}>{s.firstName} {s.lastName}</option>)}
-        </select>
-        <input type="number" step="0.01" name="amount" placeholder="Amount" value={form.amount} onChange={handleChange} required style={{ padding: 8, width: 120 }} />
-        <input type="date" name="paymentDate" value={form.paymentDate} onChange={handleChange} required style={{ padding: 8 }} />
-        <select name="method" value={form.method} onChange={handleChange} required style={{ padding: 8 }}>
-          <option value="Cash">Cash</option>
-          <option value="Bank Transfer">Bank Transfer</option>
-          <option value="Card">Card</option>
-          <option value="Mobile Payment">Mobile Payment</option>
-          <option value="Other">Other</option>
-        </select>
-        <input name="referenceNumber" placeholder="Ref # (optional)" value={form.referenceNumber} onChange={handleChange} style={{ padding: 8 }} />
-        <input name="notes" placeholder="Notes" value={form.notes} onChange={handleChange} style={{ padding: 8 }} />
-        <button type="submit">Record Payment</button>
-      </form>
+      {showForm && (
+        <form onSubmit={handleIssue} style={{ marginBottom: 20, padding: 20, border: '1px solid #ccc', borderRadius: 8 }}>
+          <h3>Issue Book</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            <select name="bookId" value={form.bookId} onChange={handleChange} required>
+              <option value="">Select Book</option>
+              {books.filter(b => b.availableCopies > 0).map(b => (
+                <option key={b.id} value={b.id}>{b.title} (Available: {b.availableCopies})</option>
+              ))}
+            </select>
+            <select name="studentId" value={form.studentId} onChange={handleChange} required>
+              <option value="">Select Student</option>
+              {students.map(s => <option key={s.id} value={s.id}>{s.firstName} {s.lastName} ({s.studentId})</option>)}
+            </select>
+            <input type="date" name="issueDate" value={form.issueDate} onChange={handleChange} required />
+            <input type="date" name="dueDate" value={form.dueDate} onChange={handleChange} required />
+            <input name="notes" placeholder="Notes" value={form.notes} onChange={handleChange} />
+          </div>
+          <button type="submit" style={{ marginTop: 10 }}>Issue Book</button>
+        </form>
+      )}
 
       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
         <thead>
           <tr style={{ background: '#f0f0f0' }}>
-            <th>Receipt #</th><th>Invoice</th><th>Student</th><th>Amount</th><th>Date</th><th>Method</th><th>Ref #</th><th>Received By</th><th>Actions</th>
+            <th>Book</th><th>Student</th><th>Issue Date</th><th>Due Date</th><th>Return Date</th><th>Status</th><th>Fine</th><th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          {payments.map(p => (
-            <tr key={p.id} style={{ borderBottom: '1px solid #ddd' }}>
-              <td>{p.receiptNumber}</td>
-              <td>{p.invoiceNumber}</td>
-              <td>{p.firstName} {p.lastName}</td>
-              <td>${p.amount}</td>
-              <td>{new Date(p.paymentDate).toLocaleDateString()}</td>
-              <td>{p.method}</td>
-              <td>{p.referenceNumber || '-'}</td>
-              <td>{p.receivedByFirstName} {p.receivedByLastName}</td>
+          {transactions.map(t => (
+            <tr key={t.id} style={{ borderBottom: '1px solid #ddd' }}>
+              <td>{t.bookTitle}</td>
+              <td>{t.firstName} {t.lastName}</td>
+              <td>{new Date(t.issueDate).toLocaleDateString()}</td>
+              <td>{new Date(t.dueDate).toLocaleDateString()}</td>
+              <td>{t.returnDate ? new Date(t.returnDate).toLocaleDateString() : '-'}</td>
+              <td><span style={{ color: t.status === 'Issued' ? 'orange' : t.status === 'Returned' ? 'green' : 'red' }}>{t.status}</span></td>
+              <td>${t.fine || 0}</td>
               <td>
-                <button onClick={() => handleDelete(p.id)} style={{ color: 'red' }}>Delete</button>
+                {t.status === 'Issued' && (
+                  <button onClick={() => handleReturn(t.id)} style={{ color: 'green' }}>Return</button>
+                )}
               </td>
             </tr>
           ))}
@@ -168,4 +132,4 @@ const Payments = () => {
   );
 };
 
-export default Payments;
+export default LibraryTransactions;

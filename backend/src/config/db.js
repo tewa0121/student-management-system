@@ -561,6 +561,60 @@ const initDatabase = async () => {
       )
     `);
 
+    // ============ ANNOUNCEMENTS & NOTIFICATIONS TABLES ============
+
+    // --- announcements ---
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS announcements (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        title VARCHAR(255) NOT NULL,
+        content TEXT NOT NULL,
+        priority ENUM('normal','important','urgent') DEFAULT 'normal',
+        audience ENUM('everyone','teachers','students','parents','staff','specific') DEFAULT 'everyone',
+        classId INT NULL,
+        sectionId INT NULL,
+        publishDate DATETIME DEFAULT CURRENT_TIMESTAMP,
+        expirationDate DATETIME NULL,
+        attachment VARCHAR(255) NULL,
+        createdBy INT NOT NULL,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (classId) REFERENCES classes(id) ON DELETE SET NULL,
+        FOREIGN KEY (sectionId) REFERENCES sections(id) ON DELETE SET NULL,
+        FOREIGN KEY (createdBy) REFERENCES users(id) ON DELETE CASCADE
+      )
+    `);
+
+    // --- notifications ---
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS notifications (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        userId INT NOT NULL,
+        type ENUM('announcement','assignment','exam','fee','attendance','event','system') NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        message TEXT NOT NULL,
+        link VARCHAR(255) NULL,
+        isRead BOOLEAN DEFAULT FALSE,
+        relatedId INT NULL,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
+      )
+    `);
+
+    // --- notification_preferences ---
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS notification_preferences (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        userId INT NOT NULL UNIQUE,
+        emailEnabled BOOLEAN DEFAULT TRUE,
+        smsEnabled BOOLEAN DEFAULT FALSE,
+        pushEnabled BOOLEAN DEFAULT TRUE,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
+      )
+    `);
+
     // --- roles & permissions ---
     await connection.query(`
       CREATE TABLE IF NOT EXISTS roles (
@@ -610,7 +664,7 @@ const initDatabase = async () => {
       );
     }
 
-    // 2. Insert default permissions
+    // 2. Insert default permissions (including announcements)
     const permissions = [
       // Users
       { name: 'users.view', description: 'View users' },
@@ -642,6 +696,11 @@ const initDatabase = async () => {
       { name: 'fees.update', description: 'Update fees' },
       { name: 'payments.create', description: 'Record payments' },
       { name: 'payments.refund', description: 'Process refunds' },
+      // Announcements
+      { name: 'announcements.view', description: 'View announcements' },
+      { name: 'announcements.create', description: 'Create announcements' },
+      { name: 'announcements.update', description: 'Update announcements' },
+      { name: 'announcements.delete', description: 'Delete announcements' },
     ];
     for (const perm of permissions) {
       await connection.query(
@@ -718,7 +777,7 @@ const initDatabase = async () => {
       VALUES ('admin@school.com', ?, 'Admin', 'User', 'super_admin', TRUE)
     `, [hashedPassword]);
 
-    console.log('✅ Database and tables initialized with seed data (including academics, attendance, exams/grading, fees/payments, timetable, assignments, and library).');
+    console.log('✅ Database and tables initialized with seed data (including academics, attendance, exams/grading, fees/payments, timetable, assignments, library, and announcements/notifications).');
   } catch (error) {
     console.error('❌ Database initialization error:', error);
     throw error;

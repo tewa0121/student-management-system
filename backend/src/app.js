@@ -26,8 +26,8 @@ const libraryRoutes = require('./routes/libraryRoutes');
 const announcementRoutes = require('./routes/announcementRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const reportRoutes = require('./routes/reportRoutes');
-// ...
-
+const settingsRoutes = require('./routes/settingsRoutes');
+const gradeScaleRoutes = require('./routes/gradeScaleRoutes');
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
@@ -39,8 +39,6 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
 }));
-
-// ⚠️ REMOVED: app.options('*', cors()); // This line caused the error!
 
 // Security & logging
 app.use(helmet({
@@ -73,7 +71,8 @@ app.use('/api/library', libraryRoutes);
 app.use('/api/announcements', announcementRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/reports', reportRoutes);
-
+app.use('/api/settings', settingsRoutes); // ✅ System Settings
+app.use('/api/grade-scale', gradeScaleRoutes);
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });

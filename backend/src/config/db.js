@@ -615,6 +615,18 @@ const initDatabase = async () => {
       )
     `);
 
+    // ============ SYSTEM SETTINGS ============
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS system_settings (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        settingKey VARCHAR(100) NOT NULL UNIQUE,
+        settingValue TEXT,
+        settingType ENUM('string','number','boolean','json','image') DEFAULT 'string',
+        description VARCHAR(255),
+        updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )
+    `);
+
     // --- roles & permissions ---
     await connection.query(`
       CREATE TABLE IF NOT EXISTS roles (
@@ -664,7 +676,7 @@ const initDatabase = async () => {
       );
     }
 
-    // 2. Insert default permissions (including announcements)
+    // 2. Insert default permissions (including announcements and settings)
     const permissions = [
       // Users
       { name: 'users.view', description: 'View users' },
@@ -701,6 +713,9 @@ const initDatabase = async () => {
       { name: 'announcements.create', description: 'Create announcements' },
       { name: 'announcements.update', description: 'Update announcements' },
       { name: 'announcements.delete', description: 'Delete announcements' },
+      // Settings
+      { name: 'settings.view', description: 'View system settings' },
+      { name: 'settings.update', description: 'Update system settings' },
     ];
     for (const perm of permissions) {
       await connection.query(
@@ -748,6 +763,24 @@ const initDatabase = async () => {
       );
     }
 
+    // --- Insert default system settings ---
+    const defaultSettings = [
+      { key: 'school_name', value: 'My School', type: 'string', description: 'School name' },
+      { key: 'school_address', value: '123 Main St, City', type: 'string', description: 'School address' },
+      { key: 'school_phone', value: '+1234567890', type: 'string', description: 'School phone number' },
+      { key: 'school_email', value: 'info@school.com', type: 'string', description: 'School email' },
+      { key: 'school_logo', value: '', type: 'image', description: 'School logo URL' },
+      { key: 'currency', value: 'USD', type: 'string', description: 'Currency symbol' },
+      { key: 'timezone', value: 'UTC', type: 'string', description: 'Timezone' },
+      { key: 'grading_system', value: '{"A+":90,"A":80,"B":70,"C":60,"D":50,"F":0}', type: 'json', description: 'Grading scale' },
+    ];
+    for (const s of defaultSettings) {
+      await connection.query(
+        `INSERT IGNORE INTO system_settings (settingKey, settingValue, settingType, description) VALUES (?, ?, ?, ?)`,
+        [s.key, s.value, s.type, s.description]
+      );
+    }
+
     // 3. Assign ALL permissions to super_admin and admin
     const [superAdminRole] = await connection.query("SELECT id FROM roles WHERE name = 'super_admin'");
     const [adminRole] = await connection.query("SELECT id FROM roles WHERE name = 'admin'");
@@ -777,7 +810,7 @@ const initDatabase = async () => {
       VALUES ('admin@school.com', ?, 'Admin', 'User', 'super_admin', TRUE)
     `, [hashedPassword]);
 
-    console.log('✅ Database and tables initialized with seed data (including academics, attendance, exams/grading, fees/payments, timetable, assignments, library, and announcements/notifications).');
+    console.log('✅ Database and tables initialized with seed data (including academics, attendance, exams/grading, fees/payments, timetable, assignments, library, announcements/notifications, and system settings).');
   } catch (error) {
     console.error('❌ Database initialization error:', error);
     throw error;

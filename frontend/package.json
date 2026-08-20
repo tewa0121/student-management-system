@@ -14,6 +14,7 @@
     "pdfmake": "^0.3.11",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
+    "react-icons": "^5.7.0",
     "react-router-dom": "^7.18.2",
     "recharts": "^3.10.1"
   },

@@ -1,5 +1,11 @@
 const AuditLog = require('../models/AuditLog');
 
+// Helper to get client IP address
+const getClientIp = (req) => {
+  const ip = req.headers['x-forwarded-for'] || req.ip || req.connection.remoteAddress || null;
+  return ip;
+};
+
 const getAuditLogs = async (req, res, next) => {
   try {
     const { userId, action, entity, startDate, endDate, page = 1, limit = 50 } = req.query;
@@ -31,10 +37,24 @@ const getAuditLog = async (req, res, next) => {
 };
 
 // Utility function to log actions (used by other controllers)
+// Parameters:
+// - req: express request object (optional – if not provided, ipAddress and userAgent will be null)
+// - userId: ID of the user performing the action
+// - action: string (e.g., 'CREATE', 'UPDATE', 'DELETE', 'LOGIN', 'LOGOUT')
+// - entity: string (e.g., 'student', 'user', 'invoice')
+// - entityId: ID of the affected record
+// - oldValues: object (previous values) – will be JSON stringified
+// - newValues: object (new values) – will be JSON stringified
 const logAction = async (req, userId, action, entity, entityId, oldValues = null, newValues = null) => {
   try {
-    const ipAddress = req.ip || req.connection.remoteAddress;
-    const userAgent = req.headers['user-agent'] || null;
+    // Extract IP and user agent from request (if provided)
+    let ipAddress = null;
+    let userAgent = null;
+    if (req) {
+      ipAddress = getClientIp(req);
+      userAgent = req.headers['user-agent'] || null;
+    }
+
     await AuditLog.create({
       userId,
       action,

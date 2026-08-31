@@ -37,6 +37,7 @@ import Settings from './pages/Settings';
 import StudentIdCard from './pages/StudentIdCard';
 import BulkImportExport from './pages/BulkImportExport'; 
 import GradingScale from './pages/GradingScale';
+import AuditLogs from './pages/AuditLogs';
 // ...
 
 

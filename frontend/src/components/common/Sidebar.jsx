@@ -28,7 +28,6 @@ const Sidebar = () => {
     if (isAdmin) {
       items.push(
         { label: '👨‍🎓 Students', path: '/students' },
-        // === NEW: Bulk Import/Export ===
         { label: '📤 Bulk Import/Export', path: '/bulk-import-export' },
         { label: '👨‍🏫 Teachers', path: '/teachers' },
         { label: '📚 Classes', path: '/classes' },
@@ -44,6 +43,8 @@ const Sidebar = () => {
         { label: '🆔 ID Cards', path: '/id-cards' },
         { label: '📢 Announcements', path: '/announcements' },
         { label: '👥 Users', path: '/users' },
+        // === NEW: Audit Logs ===
+        { label: '📋 Audit Logs', path: '/audit-logs' },
       );
     }
 

@@ -1,12 +1,13 @@
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
+const { logAction } = require('./auditController'); // Import audit helper
 
 const getUsers = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const search = req.query.search || '';
-    const role = req.query.role || null;   // <-- UPDATED: accept role filter
+    const role = req.query.role || null;
 
     const users = await User.findAll(page, limit, search, role);
     const total = await User.countAll(search, role);
@@ -55,9 +56,22 @@ const createUser = async (req, res, next) => {
       role: role || 'student',
     });
 
+    const newUser = { id: userId, email, firstName, lastName, role: role || 'student' };
+
+    // ========== LOG AUDIT ==========
+    await logAction(
+      req,
+      req.user.id,
+      'CREATE',
+      'user',
+      userId,
+      null,
+      newUser
+    );
+
     res.status(201).json({
       message: 'User created successfully',
-      user: { id: userId, email, firstName, lastName, role: role || 'student' },
+      user: newUser,
     });
   } catch (error) {
     next(error);
@@ -69,8 +83,9 @@ const updateUser = async (req, res, next) => {
     const { id } = req.params;
     const { firstName, lastName, role, isActive, password } = req.body;
 
-    const user = await User.findById(id);
-    if (!user) {
+    // Fetch old data before update
+    const oldUser = await User.findById(id);
+    if (!oldUser) {
       return res.status(404).json({ message: 'User not found' });
     }
 
@@ -78,6 +93,20 @@ const updateUser = async (req, res, next) => {
     if (!updated) {
       return res.status(400).json({ message: 'No changes made' });
     }
+
+    // Fetch updated user
+    const updatedUser = await User.findById(id);
+
+    // ========== LOG AUDIT ==========
+    await logAction(
+      req,
+      req.user.id,
+      'UPDATE',
+      'user',
+      id,
+      oldUser,
+      updatedUser
+    );
 
     res.json({ message: 'User updated successfully' });
   } catch (error) {
@@ -93,10 +122,23 @@ const deleteUser = async (req, res, next) => {
       return res.status(400).json({ message: 'You cannot delete your own account' });
     }
 
-    const deleted = await User.delete(id);
-    if (!deleted) {
+    const user = await User.findById(id);
+    if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
+
+    await User.delete(id);
+
+    // ========== LOG AUDIT ==========
+    await logAction(
+      req,
+      req.user.id,
+      'DELETE',
+      'user',
+      id,
+      user,
+      null
+    );
 
     res.json({ message: 'User deleted successfully' });
   } catch (error) {

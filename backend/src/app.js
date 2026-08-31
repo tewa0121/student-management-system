@@ -29,6 +29,7 @@ const reportRoutes = require('./routes/reportRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
 const gradeScaleRoutes = require('./routes/gradeScaleRoutes');
 const errorHandler = require('./middleware/errorHandler');
+const auditRoutes = require('./routes/auditRoutes');
 
 const app = express();
 

@@ -74,6 +74,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/settings', settingsRoutes); // ✅ System Settings
 app.use('/api/grade-scale', gradeScaleRoutes);
+app.use('/api/audit', auditRoutes);
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });

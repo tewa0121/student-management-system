@@ -36,7 +36,7 @@ const initDatabase = async () => {
       )
     `);
 
-    // --- teachers table (extends users) ---
+    // --- teachers table ---
     await connection.query(`
       CREATE TABLE IF NOT EXISTS teachers (
         id INT PRIMARY KEY AUTO_INCREMENT,
@@ -108,7 +108,7 @@ const initDatabase = async () => {
       )
     `);
 
-    // --- student_parents junction table ---
+    // --- student_parents junction ---
     await connection.query(`
       CREATE TABLE IF NOT EXISTS student_parents (
         studentId INT,
@@ -120,8 +120,6 @@ const initDatabase = async () => {
     `);
 
     // ============ ACADEMIC TABLES ============
-
-    // --- academic_years ---
     await connection.query(`
       CREATE TABLE IF NOT EXISTS academic_years (
         id INT PRIMARY KEY AUTO_INCREMENT,
@@ -134,7 +132,6 @@ const initDatabase = async () => {
       )
     `);
 
-    // --- terms ---
     await connection.query(`
       CREATE TABLE IF NOT EXISTS terms (
         id INT PRIMARY KEY AUTO_INCREMENT,
@@ -150,7 +147,6 @@ const initDatabase = async () => {
       )
     `);
 
-    // --- classes ---
     await connection.query(`
       CREATE TABLE IF NOT EXISTS classes (
         id INT PRIMARY KEY AUTO_INCREMENT,
@@ -162,7 +158,6 @@ const initDatabase = async () => {
       )
     `);
 
-    // --- sections ---
     await connection.query(`
       CREATE TABLE IF NOT EXISTS sections (
         id INT PRIMARY KEY AUTO_INCREMENT,
@@ -178,7 +173,6 @@ const initDatabase = async () => {
       )
     `);
 
-    // --- subjects ---
     await connection.query(`
       CREATE TABLE IF NOT EXISTS subjects (
         id INT PRIMARY KEY AUTO_INCREMENT,
@@ -196,7 +190,6 @@ const initDatabase = async () => {
       )
     `);
 
-    // --- enrollments ---
     await connection.query(`
       CREATE TABLE IF NOT EXISTS enrollments (
         id INT PRIMARY KEY AUTO_INCREMENT,
@@ -216,7 +209,7 @@ const initDatabase = async () => {
       )
     `);
 
-    // --- attendance table ---
+    // --- attendance ---
     await connection.query(`
       CREATE TABLE IF NOT EXISTS attendance (
         id INT PRIMARY KEY AUTO_INCREMENT,
@@ -235,9 +228,7 @@ const initDatabase = async () => {
       )
     `);
 
-    // ============ EXAM & GRADING TABLES ============
-
-    // --- grade_scale ---
+    // ============ EXAM & GRADING ============
     await connection.query(`
       CREATE TABLE IF NOT EXISTS grade_scale (
         id INT PRIMARY KEY AUTO_INCREMENT,
@@ -249,7 +240,6 @@ const initDatabase = async () => {
       )
     `);
 
-    // --- exam_types ---
     await connection.query(`
       CREATE TABLE IF NOT EXISTS exam_types (
         id INT PRIMARY KEY AUTO_INCREMENT,
@@ -258,7 +248,6 @@ const initDatabase = async () => {
       )
     `);
 
-    // --- exams ---
     await connection.query(`
       CREATE TABLE IF NOT EXISTS exams (
         id INT PRIMARY KEY AUTO_INCREMENT,
@@ -278,7 +267,6 @@ const initDatabase = async () => {
       )
     `);
 
-    // --- exam_results ---
     await connection.query(`
       CREATE TABLE IF NOT EXISTS exam_results (
         id INT PRIMARY KEY AUTO_INCREMENT,
@@ -296,9 +284,7 @@ const initDatabase = async () => {
       )
     `);
 
-    // ============ FEES & PAYMENTS TABLES ============
-
-    // --- fee_categories ---
+    // ============ FEES & PAYMENTS ============
     await connection.query(`
       CREATE TABLE IF NOT EXISTS fee_categories (
         id INT PRIMARY KEY AUTO_INCREMENT,
@@ -309,7 +295,6 @@ const initDatabase = async () => {
       )
     `);
 
-    // --- fee_structures ---
     await connection.query(`
       CREATE TABLE IF NOT EXISTS fee_structures (
         id INT PRIMARY KEY AUTO_INCREMENT,
@@ -326,7 +311,6 @@ const initDatabase = async () => {
       )
     `);
 
-    // --- invoices ---
     await connection.query(`
       CREATE TABLE IF NOT EXISTS invoices (
         id INT PRIMARY KEY AUTO_INCREMENT,
@@ -350,7 +334,6 @@ const initDatabase = async () => {
       )
     `);
 
-    // --- invoice_items ---
     await connection.query(`
       CREATE TABLE IF NOT EXISTS invoice_items (
         id INT PRIMARY KEY AUTO_INCREMENT,
@@ -367,7 +350,6 @@ const initDatabase = async () => {
       )
     `);
 
-    // --- payments ---
     await connection.query(`
       CREATE TABLE IF NOT EXISTS payments (
         id INT PRIMARY KEY AUTO_INCREMENT,
@@ -388,7 +370,6 @@ const initDatabase = async () => {
       )
     `);
 
-    // --- discounts_applied ---
     await connection.query(`
       CREATE TABLE IF NOT EXISTS discounts_applied (
         id INT PRIMARY KEY AUTO_INCREMENT,
@@ -401,7 +382,7 @@ const initDatabase = async () => {
       )
     `);
 
-    // ============ TIMETABLE TABLE ============
+    // ============ TIMETABLE ============
     await connection.query(`
       CREATE TABLE IF NOT EXISTS timetable (
         id INT PRIMARY KEY AUTO_INCREMENT,
@@ -448,7 +429,6 @@ const initDatabase = async () => {
       )
     `);
 
-    // --- assignment_submissions ---
     await connection.query(`
       CREATE TABLE IF NOT EXISTS assignment_submissions (
         id INT PRIMARY KEY AUTO_INCREMENT,
@@ -467,9 +447,7 @@ const initDatabase = async () => {
       )
     `);
 
-    // ============ LIBRARY TABLES ============
-
-    // --- library_categories ---
+    // ============ LIBRARY ============
     await connection.query(`
       CREATE TABLE IF NOT EXISTS library_categories (
         id INT PRIMARY KEY AUTO_INCREMENT,
@@ -480,7 +458,6 @@ const initDatabase = async () => {
       )
     `);
 
-    // --- library_authors ---
     await connection.query(`
       CREATE TABLE IF NOT EXISTS library_authors (
         id INT PRIMARY KEY AUTO_INCREMENT,
@@ -491,7 +468,6 @@ const initDatabase = async () => {
       )
     `);
 
-    // --- library_publishers ---
     await connection.query(`
       CREATE TABLE IF NOT EXISTS library_publishers (
         id INT PRIMARY KEY AUTO_INCREMENT,
@@ -504,7 +480,6 @@ const initDatabase = async () => {
       )
     `);
 
-    // --- library_books ---
     await connection.query(`
       CREATE TABLE IF NOT EXISTS library_books (
         id INT PRIMARY KEY AUTO_INCREMENT,
@@ -528,7 +503,6 @@ const initDatabase = async () => {
       )
     `);
 
-    // --- library_copies ---
     await connection.query(`
       CREATE TABLE IF NOT EXISTS library_copies (
         id INT PRIMARY KEY AUTO_INCREMENT,
@@ -542,7 +516,6 @@ const initDatabase = async () => {
       )
     `);
 
-    // --- library_transactions ---
     await connection.query(`
       CREATE TABLE IF NOT EXISTS library_transactions (
         id INT PRIMARY KEY AUTO_INCREMENT,
@@ -561,9 +534,7 @@ const initDatabase = async () => {
       )
     `);
 
-    // ============ ANNOUNCEMENTS & NOTIFICATIONS TABLES ============
-
-    // --- announcements ---
+    // ============ ANNOUNCEMENTS & NOTIFICATIONS ============
     await connection.query(`
       CREATE TABLE IF NOT EXISTS announcements (
         id INT PRIMARY KEY AUTO_INCREMENT,
@@ -585,7 +556,6 @@ const initDatabase = async () => {
       )
     `);
 
-    // --- notifications ---
     await connection.query(`
       CREATE TABLE IF NOT EXISTS notifications (
         id INT PRIMARY KEY AUTO_INCREMENT,
@@ -601,7 +571,6 @@ const initDatabase = async () => {
       )
     `);
 
-    // --- notification_preferences ---
     await connection.query(`
       CREATE TABLE IF NOT EXISTS notification_preferences (
         id INT PRIMARY KEY AUTO_INCREMENT,
@@ -624,6 +593,23 @@ const initDatabase = async () => {
         settingType ENUM('string','number','boolean','json','image') DEFAULT 'string',
         description VARCHAR(255),
         updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )
+    `);
+
+    // ============ AUDIT LOGS ============
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS audit_logs (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        userId INT NOT NULL,
+        action VARCHAR(100) NOT NULL,
+        entity VARCHAR(50) NOT NULL,
+        entityId INT NULL,
+        oldValues JSON NULL,
+        newValues JSON NULL,
+        ipAddress VARCHAR(45),
+        userAgent TEXT,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
       )
     `);
 
@@ -676,7 +662,7 @@ const initDatabase = async () => {
       );
     }
 
-    // 2. Insert default permissions (including announcements and settings)
+    // 2. Insert default permissions (including audit)
     const permissions = [
       // Users
       { name: 'users.view', description: 'View users' },
@@ -688,7 +674,7 @@ const initDatabase = async () => {
       { name: 'students.create', description: 'Create students' },
       { name: 'students.update', description: 'Update students' },
       { name: 'students.delete', description: 'Delete students' },
-      // Academics (also covers library)
+      // Academics
       { name: 'academics.view', description: 'View academics (years, terms, classes, etc.)' },
       { name: 'academics.create', description: 'Create academic entities' },
       { name: 'academics.update', description: 'Update academic entities' },
@@ -716,6 +702,8 @@ const initDatabase = async () => {
       // Settings
       { name: 'settings.view', description: 'View system settings' },
       { name: 'settings.update', description: 'Update system settings' },
+      // Audit
+      { name: 'audit.view', description: 'View audit logs' },
     ];
     for (const perm of permissions) {
       await connection.query(
@@ -810,7 +798,7 @@ const initDatabase = async () => {
       VALUES ('admin@school.com', ?, 'Admin', 'User', 'super_admin', TRUE)
     `, [hashedPassword]);
 
-    console.log('✅ Database and tables initialized with seed data (including academics, attendance, exams/grading, fees/payments, timetable, assignments, library, announcements/notifications, and system settings).');
+    console.log('✅ Database and tables initialized with seed data (including academics, attendance, exams/grading, fees/payments, timetable, assignments, library, announcements/notifications, system settings, and audit logs).');
   } catch (error) {
     console.error('❌ Database initialization error:', error);
     throw error;

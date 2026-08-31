@@ -135,7 +135,12 @@ function App() {
   <ProtectedLayout>
     <GradingScale />
   </ProtectedLayout>
-} />  // 
+} /> 
+<Route path="/audit-logs" element={
+  <ProtectedLayout>
+    <AuditLogs />
+  </ProtectedLayout>
+} /> // 
       <Route path="/" element={<Navigate to="/dashboard" />} />
     </Routes>
   );
